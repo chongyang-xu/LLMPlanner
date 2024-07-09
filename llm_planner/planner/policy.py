@@ -1,47 +1,65 @@
+from typing import Dict, Any
+
 from .policies import example
 from .policies import batching
+from .policies import instruct
 
 from .op import NOP
 
-from llm_planner.service.llm_service import SingleLLM
+from llm_planner.service.hf_serve import HFServe
+from llm_planner.service.vllm_serve import VLLMServe
+
+from llm_planner.service.hf_train import HFTrain
+from llm_planner.service.hf_finetune import HFFullParameterFinetune
+from llm_planner.service.hf_finetune import HFLoRAFinetune
+from llm_planner.service.hf_serve import HFLoRAServe
+
+from llm_planner.service.cache22 import Cache22
+
+SERVICE_LIST = {
+    "llm_planner.service.HFServe": HFServe,
+    "llm_planner.service.VLLMServe": VLLMServe,
+    "llm_planner.service.Cache22": Cache22,
+    "llm_planner.service.HFTrain": HFTrain,
+    "llm_planner.service.HFFullParameterFinetune": HFFullParameterFinetune,
+    "llm_planner.service.HFLoRAFinetune": HFLoRAFinetune,
+    "llm_planner.service.HFLoRAServe": HFLoRAServe,
+}
 
 
 class PolicySelector:
 
-    def __init__(self,
-                 select="example",
-                 use_grouper=True,
-                 model_path=None,
-                 tp=1,
-                 prefix_caching=False):
+    def __init__(self, select="example", policy_param_: Dict[str, Any] = {}):
+
+        self.services = {}
+        for k, Class in SERVICE_LIST.items():
+            self.services[k] = Class(self, policy_param_)
+
         if select == "example":
             self.canonizer_ = example.Canonizer(self)
             self.mapper_ = example.Mapper(self)
             self.grouper_ = example.Grouper(self)
-            self.use_grouper_ = True
+            self.grouper_.enable = policy_param_.get('use_grouper', True)
             self.router_ = example.Router(self)
             self.reducer_ = example.Reducer(self)
             self.nop_ = NOP(self)
 
-            self.llm_service_ = SingleLLM(self,
-                                          model_path=model_path,
-                                          dtype='half',
-                                          tp=tp,
-                                          prefix_caching=prefix_caching)
         elif select == "batching":
             self.canonizer_ = batching.Canonizer(self)
             self.mapper_ = NOP(self)
             self.grouper_ = batching.Grouper(self)
-            self.use_grouper_ = use_grouper
+            self.grouper_.enable = policy_param_.get('use_grouper', True)
             self.router_ = batching.Router(self)
             self.reducer_ = batching.Reducer(self)
             self.nop_ = NOP(self)
 
-            self.llm_service_ = SingleLLM(self,
-                                          model_path=model_path,
-                                          dtype='half',
-                                          tp=tp,
-                                          prefix_caching=prefix_caching)
+        elif select == "instruct":
+            self.canonizer_ = instruct.Canonizer(self)
+            self.mapper_ = NOP(self)
+            self.grouper_ = NOP(self)
+            self.router_ = instruct.Router(self)
+            self.reducer_ = instruct.Reducer(self)
+            self.nop_ = NOP(self)
         else:
             assert False
 

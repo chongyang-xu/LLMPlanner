@@ -33,12 +33,13 @@ class Grouper(AbstractGrouper):
         super().__init__(p_selector)
         self.q_list = []
         self.emit_length = 4
+        self.enable = True
 
     def __call__(self, alloc: Allocation):
         assert alloc.type == AllocationType.QUERY_GROUPING
         assert len(alloc.q_list) == 1
 
-        if not self.policy_selector.use_grouper():
+        if not self.enable:
             alloc.type = AllocationType.QUERY_ROUTING
             alloc.op = self.policy_selector.router()
             return alloc

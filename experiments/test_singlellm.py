@@ -1,27 +1,22 @@
-from llm_planner.service.llm_service import SingleLLM
+from typing import Dict, Any
 
-from dataset import load_coqa_story
+from llm_planner.service.vllm_serve import VLLMServe
 
-import os
-
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+from llm_planner.data.coqa_repurpose import load_coqa_story
 
 REPEAT = 3
 
-model_list = [
-    #'/DS/dsg-ml/nobackup/cxu/weights/Mistral-7B-v0.3/',
-    '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/'
-]
+model = '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/'
 
-q_list = load_coqa_story(n_query=16)
-
-model = model_list[0]
-
-handle = SingleLLM(None, model_path=model, dtype='half')
+policy_para: Dict[str, Any] = {"model_path": model}
+handle = VLLMServe(None, policy_param_=policy_para)
+handle.init_service()
 
 n_in = 256
+q_list = load_coqa_story(n_query=16)
 t_list = handle.token(q_list, seq_token_len=n_in)
 #logger.info(handle.detoken(t_list))
+
 for n_out in [1, 4, 16, 64, 256, 1024]:
     try:
         ml = model.split('/')[-2]

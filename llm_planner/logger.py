@@ -7,6 +7,9 @@ class Logger:
     def __init__(self, tag: str):
         # Configure the logger
         logger = logging.getLogger(tag)
+
+        logger.propagate = False
+
         logger.setLevel(logging.DEBUG)  # Set the logging level
 
         # Create a StreamHandler to log to stdout

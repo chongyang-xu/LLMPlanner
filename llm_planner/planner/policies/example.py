@@ -98,7 +98,8 @@ class Router(AbstractRouter):
         # all route to llm service
         #-------------------------
         alloc.type = AllocationType.QERTY_SERVING
-        r_list = self.policy_selector.llm_service().work_on(alloc.q_list)
+        r_list = self.policy_selector.services[
+            'llm_planner.service.VLLMServe'].work_on(alloc.q_list)
         alloc.q_list = r_list
 
         alloc.type = AllocationType.QUERY_REDUCING

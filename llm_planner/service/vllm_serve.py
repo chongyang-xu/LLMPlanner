@@ -1,12 +1,12 @@
-from typing import List
+from typing import List, Dict, Any
 
 from llm_planner.query import Query
-from llm_planner.service.service import Service
-from llm_planner.util import timing, test_timing, is_typed_dict
+from llm_planner.service.service import SingleLLMServe
+from llm_planner.util import timing, test_timing, is_typed_dict, get_gpu_name
 from llm_planner.logger import Logger
 
 # Create a custom logger
-logger = Logger('SingleLLMLogger')
+logger = Logger('VLLMLogger')
 
 from vllm import LLM as VLLM, SamplingParams as VLLMSamplingParams
 from vllm.inputs import TokensPrompt
@@ -14,35 +14,52 @@ from vllm.inputs import TokensPrompt
 from transformers import AutoTokenizer
 
 
-class SingleLLM(Service):
-    # from llm_planner.planner.orchestrator import Orchestrator
-    def __init__(self,
-                 p_selector,
-                 model_path=None,
-                 dtype='auto',
-                 tp=1,
-                 prefix_caching=False):
-        logger.info(f"model_path={model_path}, dtype={dtype}")
+class VLLMServe(SingleLLMServe):
+
+    def __init__(self, p_selector, policy_param_: Dict[str, Any]):
 
         super().__init__()
         self.p_selector = p_selector
+        self.init_done = False
+        ##########################
+        #
+        # setting parameters
+        #
+        ##########################
+        self.model_path = policy_param_.get(
+            'model_path', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.prefix_caching = policy_param_.get('prefix_caching', False)
+        self.tp_size = policy_param_.get('tp_size', 1)
+        self.data_type = policy_param_.get('data_type', 'auto')
 
-        if model_path is None:
-            model_path = "/DS/dsg-ml/nobackup/cxu/weights/Qwen2-0.5B/"
-        self.model = VLLM(model=model_path,
+        gname = get_gpu_name()
+        if gname == 'Volta' and self.data_type == 'auto':
+            self.data_type = 'half'
+            logger.info("Overwriting data_type to half.")
+        self.max_token = policy_param_.get('max_token', 16)
+
+    def init_service(self):
+        if self.init_done:
+            return
+
+        self.model = VLLM(model=self.model_path,
                           trust_remote_code=True,
-                          enable_prefix_caching=prefix_caching,
-                          dtype=dtype,
-                          tensor_parallel_size=tp)
+                          enable_prefix_caching=self.prefix_caching,
+                          dtype=self.data_type,
+                          tensor_parallel_size=self.tp_size)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
+        self.init_done = True
+
     @timing
-    def work_on(self, q_list: List[Query], max_tokens=16):
+    def work_on(self, q_list: List[Query]):
+        self.init_service()
+
         sampling_param = VLLMSamplingParams(temperature=0,
-                                            max_tokens=max_tokens)
+                                            max_tokens=self.max_token)
         batch = [str(q) for q in q_list]
         outputs = self.model.generate(batch, sampling_param)
 

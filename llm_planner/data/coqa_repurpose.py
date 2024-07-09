@@ -1,4 +1,5 @@
-import pandas as pd
+from llm_planner.data.dataset import MiscDataset
+
 import numpy as np
 from pandas import json_normalize
 
@@ -6,6 +7,10 @@ import json
 
 from llm_planner.planner.queue import Ingress
 from llm_planner.query import Query, PromptedQuery
+
+
+class CoQARepurpose(MiscDataset):
+    pass
 
 
 def load_coqa_story(n_query=16):

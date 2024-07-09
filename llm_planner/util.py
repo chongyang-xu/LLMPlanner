@@ -1,4 +1,6 @@
-import time
+import sys, time
+import inspect
+import pynvml
 
 from llm_planner.logger import Logger
 
@@ -27,9 +29,6 @@ def timing(func):
         return result
 
     return wrapper
-
-
-import inspect
 
 
 def test_timing(func):
@@ -68,3 +67,42 @@ def test_timing(func):
 def is_typed_dict(obj: object) -> bool:
     return hasattr(obj, '__annotations__') and isinstance(
         obj.__class__, type) and issubclass(obj.__class__, dict)
+
+
+def gpu_version_to_name(major, minor):
+    if major == 8:
+        return 'Ampere'
+    elif major == 9:
+        return 'Hopper'
+    elif major == 7:
+        return 'Volta' if minor == 0 else 'Turing'
+    elif major == 6:
+        return 'Pascal'
+    elif major == 5:
+        return 'Maxwell'
+    elif major == 3:
+        return 'Kepler'
+    elif major == 2:
+        return 'Fermi'
+    else:
+        return 'Unknown'
+
+
+def get_gpu_name():
+    pynvml.nvmlInit()
+    device_count = pynvml.nvmlDeviceGetCount()
+    if device_count < 1:
+        return 'Unknown'
+    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    major, minor = pynvml.nvmlDeviceGetCudaComputeCapability(handle)
+    arch_name = gpu_version_to_name(major, minor)
+
+    pynvml.nvmlShutdown()
+
+    return arch_name
+
+
+def report_system_config():
+    print('-' * 50)
+    print('Python Version:', sys.version)
+    print('-' * 50)
