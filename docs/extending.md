@@ -13,4 +13,4 @@ LLMPlanner is a planner for serving natural language requests. LLMPlanner takes 
 
 ### Adding a new service
 
-A new service can be added to `llm_planner/service/`.
+A new service can be added to `llm_planner/service/`, and can then be registered to `SERVICE_LIST` in `llm_planner/planner/policy.py`.
