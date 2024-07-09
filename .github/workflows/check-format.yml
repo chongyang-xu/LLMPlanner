@@ -1,0 +1,25 @@
+name: Check Code Format
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install yapf
+      run: pip install yapf==0.40.2
+
+    - name: Run format check
+      run: ./scripts/format.sh
