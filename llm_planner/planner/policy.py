@@ -55,6 +55,11 @@ class PolicySelector:
             self.reducer_ = batching.Reducer(self)
             self.nop_ = NOP(self)
 
+            if self.use_cache22:
+                self.services["llm_planner.service.Cache22"].init_service()
+            else:
+                self.services["llm_planner.service.HFServe"].init_service()
+
         elif select == "instruct":
             self.canonizer_ = instruct.Canonizer(self)
             self.mapper_ = NOP(self)

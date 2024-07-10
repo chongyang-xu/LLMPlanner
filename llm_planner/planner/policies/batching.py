@@ -1,12 +1,37 @@
 from llm_planner.planner.allocation import AllocationType, Allocation
 
-from llm_planner.planner.op import AbstractCanonizer, AbstractGrouper
+from llm_planner.planner.op import AbstractCanonizer, AbstractGrouper, AbstractRouter
 
-from .example import Router as EX_Router
 from .example import Reducer as EX_Reducer
 
-Router = EX_Router
 Reducer = EX_Reducer
+
+
+class Router(AbstractRouter):
+
+    def __init__(self, p_selector):
+        super().__init__(p_selector)
+
+    def __call__(self, alloc: Allocation):
+        assert alloc.type == AllocationType.QUERY_ROUTING
+        assert len(alloc.q_list) >= 1
+
+        #-------------------------
+        # all route to llm service
+        #-------------------------
+        alloc.type = AllocationType.QERTY_SERVING
+        if self.policy_selector.use_cache22:
+            r_list = self.policy_selector.services[
+                'llm_planner.service.Cache22'].work_on(alloc.q_list)
+        else:
+            r_list = self.policy_selector.services[
+                'llm_planner.service.HFServe'].work_on(alloc.q_list)
+
+        alloc.q_list = r_list
+
+        alloc.type = AllocationType.QUERY_REDUCING
+        alloc.op = self.policy_selector.reducer()
+        return alloc
 
 
 class Canonizer(AbstractCanonizer):
