@@ -74,5 +74,5 @@ class InstructQuery(Query):
 
 class Stop(Query):
 
-    def __init__(self, qid: int):
+    def __init__(self, qid: int = -1):
         super().__init__(qid, "$stop$")

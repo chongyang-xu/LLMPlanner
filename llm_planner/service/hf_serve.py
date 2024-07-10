@@ -44,8 +44,7 @@ class HFServe(SingleLLMServe):
 
     @timing
     def work_on(self, q_list: List[Query]):
-        assert len(q_list) == 1
-        self.init_service(q_list[0].instruct_param)
+        self.init_service()
 
         batch = [str(q) for q in q_list]
 

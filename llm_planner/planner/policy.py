@@ -14,12 +14,12 @@ from llm_planner.service.hf_finetune import HFFullParameterFinetune
 from llm_planner.service.hf_finetune import HFLoRAFinetune
 from llm_planner.service.hf_serve import HFLoRAServe
 
-from llm_planner.service.cache22 import Cache22
+from llm_planner.service.cache22 import CachedServing22
 
 SERVICE_LIST = {
     "llm_planner.service.HFServe": HFServe,
     "llm_planner.service.VLLMServe": VLLMServe,
-    "llm_planner.service.Cache22": Cache22,
+    "llm_planner.service.Cache22": CachedServing22,
     "llm_planner.service.HFTrain": HFTrain,
     "llm_planner.service.HFFullParameterFinetune": HFFullParameterFinetune,
     "llm_planner.service.HFLoRAFinetune": HFLoRAFinetune,
@@ -30,6 +30,8 @@ SERVICE_LIST = {
 class PolicySelector:
 
     def __init__(self, select="example", policy_param_: Dict[str, Any] = {}):
+
+        self.use_cache22 = policy_param_.get('use_cache22', False)
 
         self.services = {}
         for k, Class in SERVICE_LIST.items():
