@@ -6,7 +6,6 @@ pip install setuptools==69.5.1
 pip install yapf==0.40.2
 pip install pynvml==11.5.0
 
-pip install vllm==0.5.0
 pip install deepspeed==0.14.4
 
 

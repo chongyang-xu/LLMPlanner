@@ -7,7 +7,6 @@ from .policies import instruct
 from .op import NOP
 
 from llm_planner.service.hf_serve import HFServe
-from llm_planner.service.vllm_serve import VLLMServe
 
 from llm_planner.service.hf_train import HFTrain
 from llm_planner.service.hf_finetune import HFFullParameterFinetune
@@ -18,7 +17,6 @@ from llm_planner.service.cache22 import CachedServing22
 
 SERVICE_LIST = {
     "llm_planner.service.HFServe": HFServe,
-    "llm_planner.service.VLLMServe": VLLMServe,
     "llm_planner.service.Cache22": CachedServing22,
     "llm_planner.service.HFTrain": HFTrain,
     "llm_planner.service.HFFullParameterFinetune": HFFullParameterFinetune,
