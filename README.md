@@ -31,9 +31,13 @@ After llm_planner is installed, an 'app' that uses llm_planner can be started.
 
 This is an example sketch of an app:
 ```python
+
+policy_para: Dict[str, Any] = {
+    "model_path": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
+}
+
 # select a policy/optimization to use
-ps = PolicySelector(select="batching",
-                    model_path=model_path)
+ps = PolicySelector(select="batching", policy_param_=policy_para)
 
 # create a orchestrator with the policy
 orch = Orchestrator(ps)
@@ -51,8 +55,8 @@ orch.run()
 eg = orch.inject_egress()
 ```
 
-### an example: test_planner.py
+### an example:
 ```bash
 cd test/
-python test_planner.py
+python test_policy_batching.py
 ```
