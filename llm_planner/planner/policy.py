@@ -16,6 +16,7 @@ from llm_planner.service.hf_serve import HFLoRAServe
 from llm_planner.service.cache22 import CachedServing22
 
 SERVICE_LIST = {
+    "llm_planner.service.HFServe_API": HFServe_API
     "llm_planner.service.HFServe": HFServe,
     "llm_planner.service.Cache22": CachedServing22,
     "llm_planner.service.HFTrain": HFTrain,
