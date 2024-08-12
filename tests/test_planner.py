@@ -9,7 +9,7 @@ policy_para: Dict[str, Any] = {
     "model_api":'gpt-3.5-turbo'
 }
 
-ps = PolicySelector(select="batching",model_api=policy_param_.get("model_api"))
+ps = PolicySelector(select="batching",policy_param_=policy_para)
 
 # create a orchestrator with the policy
 orch = Orchestrator(ps)

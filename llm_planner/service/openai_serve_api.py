@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 logger = Logger('HuggingFaceLogger')
 
 
-class HFServe_API(SingleLLMServe):
+class OpenAIServe_API(SingleLLMServe):
 
     def __init__(self, p_selector, policy_param_: Dict[str, Any]):
 
@@ -52,7 +52,7 @@ class HFServe_API(SingleLLMServe):
         self.init_done = True
 
     @timing
-    def work_on_api(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Query]):
         self.init_service()
         openai.api_key = self.api_key
         
