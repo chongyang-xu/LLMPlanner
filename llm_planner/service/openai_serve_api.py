@@ -6,8 +6,6 @@ from llm_planner.service.service import SingleLLMServe
 
 from llm_planner.logger import Logger
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
 import openai
 import os 
 
@@ -55,7 +53,7 @@ class OpenAIServe_API(SingleLLMServe):
     def work_on(self, q_list: List[Query]):
         self.init_service()
         openai.api_key = self.api_key
-        
+        responses=[]
         batch = [str(q) for q in q_list]
 
         response = openai.Completion.create(
@@ -71,8 +69,6 @@ class OpenAIServe_API(SingleLLMServe):
 
         for idx, o in enumerate(responses):
             q_list[idx].response = o
-
-        return q_list
 
         return q_list
 

@@ -8,7 +8,7 @@ from .op import NOP
 
 from llm_planner.service.hf_serve import HFServe
 from llm_planner.service.openai_serve_api import OpenAIServe_API
-
+from llm_planner.service.hf_serve import HFServe
 from llm_planner.service.hf_train import HFTrain
 from llm_planner.service.hf_finetune import HFFullParameterFinetune
 from llm_planner.service.hf_finetune import HFLoRAFinetune
