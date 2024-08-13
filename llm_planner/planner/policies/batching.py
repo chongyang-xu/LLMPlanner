@@ -22,11 +22,10 @@ class Router(AbstractRouter):
         alloc.type = AllocationType.QERTY_SERVING
         if self.policy_selector.use_cache22:
             r_list = self.policy_selector.services[
-                'llm_planner.service.Cache22'].HFServe.work_on(alloc.q_list)
+                'llm_planner.service.Cache22'].work_on(alloc.q_list)
         else:
             r_list = self.policy_selector.services[
-                'llm_planner.service.HFServe'].OpenAIServe_API.work_on(
-                    alloc.q_list)
+                'llm_planner.service.HFServe'].work_on(alloc.q_list)
 
         alloc.q_list = r_list
 

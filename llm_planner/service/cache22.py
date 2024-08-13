@@ -29,7 +29,9 @@ class CachedServing22(SingleLLMServe):
     def init_service(self):
         if self.init_done:
             return
-        self.impl = self.p_selector.services["llm_planner.service.HFServe"]
+        # use openai api on default
+        self.impl = self.p_selector.services[
+            "llm_planner.service.OpenAIServe_API"]
         self.impl.init_service()
 
         self.cache_impl = Cache(self.cache_dir)
