@@ -7,7 +7,7 @@ from llm_planner.service.service import SingleLLMServe
 from llm_planner.logger import Logger
 
 import openai
-import os 
+import os
 
 from dotenv import load_dotenv
 # Create a custom logger
@@ -31,8 +31,7 @@ class OpenAIServe_API(SingleLLMServe):
         # setting parameters
         #
         ##########################
-        self.model_path = policy_param_.get(
-            'model_api', "gpt-3.5-turbo")
+        self.model_path = policy_param_.get('model_api', "gpt-3.5-turbo")
         self.max_token = policy_param_.get('max_token', 16)
 
     def init_service(self):
@@ -53,16 +52,14 @@ class OpenAIServe_API(SingleLLMServe):
     def work_on(self, q_list: List[Query]):
         self.init_service()
         openai.api_key = self.api_key
-        responses=[]
+        responses = []
         batch = [str(q) for q in q_list]
 
-        response = openai.Completion.create(
-            engine="gpt-3.5-turbo", 
-            prompt=batch,
-            max_tokens=self.max_token,  
-            stop=None,
-            temperature=0.7
-        )
+        response = openai.Completion.create(engine="gpt-3.5-turbo",
+                                            prompt=batch,
+                                            max_tokens=self.max_token,
+                                            stop=None,
+                                            temperature=0.7)
 
         generated_text = response['choices'][0]['text'].strip()
         responses.append(generated_text)
@@ -71,5 +68,3 @@ class OpenAIServe_API(SingleLLMServe):
             q_list[idx].response = o
 
         return q_list
-
-

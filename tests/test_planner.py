@@ -6,10 +6,10 @@ from llm_planner.query import Query
 
 policy_para: Dict[str, Any] = {
     "model_path": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
-    "model_api":'gpt-3.5-turbo'
+    "model_api": 'gpt-3.5-turbo'
 }
 
-ps = PolicySelector(select="batching",policy_param_=policy_para)
+ps = PolicySelector(select="batching", policy_param_=policy_para)
 
 # create a orchestrator with the policy
 orch = Orchestrator(ps)
