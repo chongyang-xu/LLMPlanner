@@ -19,7 +19,7 @@ class Router(AbstractRouter):
         #-------------------------
         # all route to llm service
         #-------------------------
-        alloc.type = AllocationType.QERTY_SERVING
+        alloc.type = AllocationType.QUERY_SERVING
         if self.policy_selector.use_cache22:
             r_list = self.policy_selector.services[
                 'llm_planner.service.Cache22'].work_on(alloc.q_list)

@@ -10,7 +10,7 @@ class AllocationType(Enum):
     QUERY_ROUTING = 3
     QUERY_GROUPING = 4
     QUERY_REDUCING = 5
-    QERTY_SERVING = 6
+    QUERY_SERVING = 6
     NOP = 7
 
 
