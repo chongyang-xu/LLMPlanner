@@ -21,7 +21,7 @@ orch = Orchestrator(ps)
 
 local_rank
 para: Dict[str, Any] = {
-    "model_path": "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/",
+    "model": "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/",
     "output_path": "/tmp/",
     "dataset": DummyDataset()
 }

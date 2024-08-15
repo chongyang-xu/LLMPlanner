@@ -7,7 +7,8 @@ from .policies import instruct
 from .op import NOP
 
 from llm_planner.service.hf_serve import HFServe
-
+from llm_planner.service.openai_serve_api import OpenAIServe_API
+from llm_planner.service.hf_serve import HFServe
 from llm_planner.service.hf_train import HFTrain
 from llm_planner.service.hf_finetune import HFFullParameterFinetune
 from llm_planner.service.hf_finetune import HFLoRAFinetune
@@ -17,6 +18,7 @@ from llm_planner.service.cache22 import CachedServing22
 
 SERVICE_LIST = {
     "llm_planner.service.HFServe": HFServe,
+    "llm_planner.service.OpenAIServe_API": OpenAIServe_API,
     "llm_planner.service.Cache22": CachedServing22,
     "llm_planner.service.HFTrain": HFTrain,
     "llm_planner.service.HFFullParameterFinetune": HFFullParameterFinetune,
@@ -30,6 +32,8 @@ class PolicySelector:
     def __init__(self, select="example", policy_param_: Dict[str, Any] = {}):
 
         self.use_cache22 = policy_param_.get('use_cache22', False)
+
+        self.model = policy_param_.get('model', None)
 
         self.services = {}
         for k, Class in SERVICE_LIST.items():
@@ -52,11 +56,6 @@ class PolicySelector:
             self.router_ = batching.Router(self)
             self.reducer_ = batching.Reducer(self)
             self.nop_ = NOP(self)
-
-            if self.use_cache22:
-                self.services["llm_planner.service.Cache22"].init_service()
-            else:
-                self.services["llm_planner.service.HFServe"].init_service()
 
         elif select == "instruct":
             self.canonizer_ = instruct.Canonizer(self)

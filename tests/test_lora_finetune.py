@@ -19,7 +19,7 @@ ps = PolicySelector(select="instruct")
 orch = Orchestrator(ps)
 
 para: Dict[str, Any] = {
-    "model_path": "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/",
+    "model": "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/",
     "lora_output_path": "/tmp/lora_3/",
     "max_steps": 3,
     "dataset": Dolly15kOAI()

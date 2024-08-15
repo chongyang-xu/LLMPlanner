@@ -16,7 +16,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 logger = Logger('TestCache22')
 
 policy_para: Dict[str, Any] = {
-    "model_path": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
+    "model": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
     "use_cache22": False,
     "cache22": {
         "cache_dir": "/tmp/cache22/"

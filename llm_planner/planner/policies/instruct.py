@@ -32,7 +32,7 @@ class Router(AbstractRouter):
         assert alloc.type == AllocationType.QUERY_ROUTING
         assert len(alloc.q_list) == 1
 
-        alloc.type = AllocationType.QERTY_SERVING
+        alloc.type = AllocationType.QUERY_SERVING
 
         q = alloc.q_list[0]
         if not isinstance(q, InstructQuery):

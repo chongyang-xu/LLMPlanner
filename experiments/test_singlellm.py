@@ -8,7 +8,7 @@ REPEAT = 3
 
 model = '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/'
 
-policy_para: Dict[str, Any] = {"model_path": model}
+policy_para: Dict[str, Any] = {"model": model}
 handle = VLLMServe(None, policy_param_=policy_para)
 handle.init_service()
 

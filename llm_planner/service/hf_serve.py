@@ -25,8 +25,8 @@ class HFServe(SingleLLMServe):
         # setting parameters
         #
         ##########################
-        self.model_path = policy_param_.get(
-            'model_path', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.model_str = policy_param_.get(
+            'model', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
         self.max_token = policy_param_.get('max_token', 16)
 
     def init_service(self):
@@ -34,9 +34,9 @@ class HFServe(SingleLLMServe):
             return
 
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_path, device_map="auto").eval()
+            self.model_str, device_map="auto").eval()
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_str)
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -79,8 +79,8 @@ class HFLoRAServe(SingleLLMServe):
         # setting parameters
         #
         ##########################
-        self.model_path = policy_param_.get(
-            'model_path', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.model_str = policy_param_.get(
+            'model', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
         self.max_token = policy_param_.get('max_token', 16)
 
     def init_service(self, inst_param: Dict[str, Any]):
@@ -88,13 +88,13 @@ class HFLoRAServe(SingleLLMServe):
             return
 
         assert "lora_path" in inst_param
-        self.model_path = inst_param.get('model_path', self.model_path)
+        self.model_str = inst_param.get('model', self.model_str)
         self.lora_path = inst_param.get('lora_path', None)
 
         self.base_model = AutoModelForCausalLM.from_pretrained(
-            self.model_path, device_map="auto").eval()
+            self.model_str, device_map="auto").eval()
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_str)
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
 

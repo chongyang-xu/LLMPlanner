@@ -65,11 +65,11 @@ class InstructQuery(Query):
 
     def param_check(self, param: Dict[str, Any]):
         if self.instruct in (Instruct.TRAIN, Instruct.FINETUNE_FULL):
-            assert "model_path" in param
+            assert "model" in param
         elif self.instruct == Instruct.FINETUNE_LORA:
-            assert "model_path" in param
+            assert "model" in param
         elif self.instruct == Instruct.INFERENCE_LORA:
-            assert "model_path" in param
+            assert "model" in param
 
 
 class Stop(Query):

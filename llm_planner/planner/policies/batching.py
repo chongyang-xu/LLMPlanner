@@ -2,6 +2,8 @@ from llm_planner.planner.allocation import AllocationType, Allocation
 
 from llm_planner.planner.op import AbstractCanonizer, AbstractGrouper, AbstractRouter
 
+from llm_planner.util import ModelType, model_type
+
 from .example import Reducer as EX_Reducer
 
 Reducer = EX_Reducer
@@ -19,13 +21,23 @@ class Router(AbstractRouter):
         #-------------------------
         # all route to llm service
         #-------------------------
-        alloc.type = AllocationType.QERTY_SERVING
+        alloc.type = AllocationType.QUERY_SERVING
         if self.policy_selector.use_cache22:
             r_list = self.policy_selector.services[
                 'llm_planner.service.Cache22'].work_on(alloc.q_list)
         else:
-            r_list = self.policy_selector.services[
-                'llm_planner.service.HFServe'].work_on(alloc.q_list)
+            m_type = model_type(self.policy_selector.model)
+            if m_type == ModelType.OPENAI:
+                r_list = self.policy_selector.services[
+                    'llm_planner.service.OpenAIServe_API'].work_on(alloc.q_list)
+
+            elif m_type == ModelType.ANTHROPIC:
+                r_list = self.policy_selector.services[
+                    'llm_planner.service.AnthropicServe_API'].work_on(
+                        alloc.q_list)
+            else:
+                r_list = self.policy_selector.services[
+                    'llm_planner.service.HFServe'].work_on(alloc.q_list)
 
         alloc.q_list = r_list
 
