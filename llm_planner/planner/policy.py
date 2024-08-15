@@ -8,6 +8,7 @@ from .op import NOP
 
 from llm_planner.service.hf_serve import HFServe
 from llm_planner.service.openai_serve_api import OpenAIServe_API
+from llm_planner.service.anthropic_serve_api import AnthropicServe_API
 from llm_planner.service.hf_serve import HFServe
 from llm_planner.service.hf_train import HFTrain
 from llm_planner.service.hf_finetune import HFFullParameterFinetune
@@ -19,6 +20,7 @@ from llm_planner.service.cache22 import CachedServing22
 SERVICE_LIST = {
     "llm_planner.service.HFServe": HFServe,
     "llm_planner.service.OpenAIServe_API": OpenAIServe_API,
+    "llm_planner.service.AnthropicServe_API": AnthropicServe_API,
     "llm_planner.service.Cache22": CachedServing22,
     "llm_planner.service.HFTrain": HFTrain,
     "llm_planner.service.HFFullParameterFinetune": HFFullParameterFinetune,

@@ -15,4 +15,5 @@ pip install peft==0.11.1
 pip install trl==0.9.4
 pip install datasets==2.20.0
 pip install openai==1.40.6
+pip install anthropic==0.34.0
 pip install python-dotenv==1.0.1
