@@ -33,7 +33,7 @@ This is an example sketch of an app:
 ```python
 
 policy_para: Dict[str, Any] = {
-    "model_path": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
+    "model": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
 }
 
 # select a policy/optimization to use

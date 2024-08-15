@@ -20,13 +20,13 @@ class HFTrain(SingleLLMTrain):
         # setting parameters
         #
         ##########################
-        self.model_path = policy_param_.get(
-            'model_path', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.model = policy_param_.get('model',
+                                       "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
 
     def init_service(self, inst_param: Dict[str, Any]):
         if self.init_done:
             return
-        self.model_path = inst_param.get('model_path', self.model_path)
+        self.model = inst_param.get('model', self.model)
         self.output_path = inst_param.get('output_path', None)
         self.dataset = inst_param.get('dataset', None)
         assert self.output_path is not None, "output_path is required"
@@ -58,7 +58,7 @@ class HFTrain(SingleLLMTrain):
         # dump parameters
         print('-' * 50)
         print(self.__class__.__name__)
-        print(f"model_path      : {self.model_path}")
+        print(f"model      : {self.model}")
         print('-' * 50)
 
         config = {
@@ -99,9 +99,9 @@ class HFTrain(SingleLLMTrain):
             local_rank=local_rank,
         )
 
-        self.base_model = AutoModelForCausalLM.from_pretrained(self.model_path)
+        self.base_model = AutoModelForCausalLM.from_pretrained(self.model)
         self.base_model.gradient_checkpointing_enable()
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path,
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model,
                                                        trust_remote_code=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.base_model.resize_token_embeddings(len(self.tokenizer))

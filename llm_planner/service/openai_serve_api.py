@@ -31,7 +31,7 @@ class OpenAIServe_API(SingleLLMServe):
         # setting parameters
         #
         ##########################
-        self.model_path = policy_param_.get('model_api', "gpt-3.5-turbo")
+        self.model = policy_param_.get('model', "gpt-3.5-turbo")
         self.max_token = policy_param_.get('max_token', 16)
 
     def init_service(self):
@@ -40,9 +40,9 @@ class OpenAIServe_API(SingleLLMServe):
             return
 
         # self.model = AutoModelForCausalLM.from_pretrained(
-        #     self.model_path, device_map="auto").eval()
+        #     self.model, device_map="auto").eval()
 
-        # self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        # self.tokenizer = AutoTokenizer.from_pretrained(self.model)
         # self.tokenizer.padding_side = "left"
         # self.tokenizer.pad_token = self.tokenizer.eos_token
 

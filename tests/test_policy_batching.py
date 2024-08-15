@@ -15,7 +15,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 logger = Logger('TestBatching')
 
 policy_para: Dict[str, Any] = {
-    "model_path": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
+    #"model": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
+    "model": 'gpt-3.5-turbo',
 }
 
 ps = PolicySelector(select="batching", policy_param_=policy_para)
