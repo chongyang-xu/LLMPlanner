@@ -23,13 +23,13 @@ class HFFullParameterFinetune(SingleLLMFinetune):
         # setting parameters
         #
         ##########################
-        self.model = policy_param_.get('model',
-                                       "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.model_str = policy_param_.get(
+            'model', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
 
     def init_service(self, inst_param: Dict[str, Any]):
         if self.init_done:
             return
-        self.model = inst_param.get('model', self.model)
+        self.model_str = inst_param.get('model', self.model_str)
         self.output_path = inst_param.get('output_path', None)
         self.dataset = inst_param.get('dataset', None)
         assert self.output_path is not None, "output_path is required"
@@ -61,7 +61,7 @@ class HFFullParameterFinetune(SingleLLMFinetune):
         # dump parameters
         print('-' * 50)
         print(self.__class__.__name__)
-        print(f"model      : {self.model}")
+        print(f"model      : {self.model_str}")
         print('-' * 50)
 
         config = {
@@ -101,9 +101,9 @@ class HFFullParameterFinetune(SingleLLMFinetune):
             save_steps=save_steps,
             max_seq_length=max_seq_length)
 
-        self.base_model = AutoModelForCausalLM.from_pretrained(self.model)
+        self.base_model = AutoModelForCausalLM.from_pretrained(self.model_str)
         self.base_model.gradient_checkpointing_enable()
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model,
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_str,
                                                        trust_remote_code=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.base_model.resize_token_embeddings(len(self.tokenizer))
@@ -144,13 +144,13 @@ class HFLoRAFinetune(SingleLLMFinetune):
         # setting parameters
         #
         ##########################
-        self.model = policy_param_.get('model',
-                                       "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.model_str = policy_param_.get(
+            'model', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
 
     def init_service(self, inst_param: Dict[str, Any]):
         if self.init_done:
             return
-        self.model = inst_param.get('model', self.model)
+        self.model_str = inst_param.get('model', self.model_str)
         self.lora_output_path = inst_param.get('lora_output_path', None)
         self.dataset = inst_param.get('dataset', None)
         assert self.lora_output_path is not None, "lora_output_path is required"
@@ -197,12 +197,12 @@ class HFLoRAFinetune(SingleLLMFinetune):
         print(f"lora_bias       : {lora_bias}")
         print('-' * 50)
 
-        self.base_model = AutoModelForCausalLM.from_pretrained(self.model)
+        self.base_model = AutoModelForCausalLM.from_pretrained(self.model_str)
         for param in self.base_model.parameters():
             param.requires_grad = False
         self.base_model.gradient_checkpointing_enable()
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model,
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_str,
                                                        trust_remote_code=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.base_model.resize_token_embeddings(len(self.tokenizer))

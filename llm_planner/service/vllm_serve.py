@@ -26,8 +26,8 @@ class VLLMServe(SingleLLMServe):
         # setting parameters
         #
         ##########################
-        self.model = policy_param_.get('model',
-                                       "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
+        self.model_str = policy_param_.get(
+            'model', "/DS/dsg-ml/nobackup/cxu/weights/gpt2/")
         self.prefix_caching = policy_param_.get('prefix_caching', False)
         self.tp_size = policy_param_.get('tp_size', 1)
         self.data_type = policy_param_.get('data_type', 'auto')
@@ -42,13 +42,13 @@ class VLLMServe(SingleLLMServe):
         if self.init_done:
             return
 
-        self.model = VLLM(model=self.model,
+        self.model = VLLM(model=self.model_str,
                           trust_remote_code=True,
                           enable_prefix_caching=self.prefix_caching,
                           dtype=self.data_type,
                           tensor_parallel_size=self.tp_size)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_str)
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
 

@@ -33,6 +33,8 @@ class PolicySelector:
 
         self.use_cache22 = policy_param_.get('use_cache22', False)
 
+        self.model = policy_param_.get('model', None)
+
         self.services = {}
         for k, Class in SERVICE_LIST.items():
             self.services[k] = Class(self, policy_param_)
@@ -54,11 +56,6 @@ class PolicySelector:
             self.router_ = batching.Router(self)
             self.reducer_ = batching.Reducer(self)
             self.nop_ = NOP(self)
-
-            if self.use_cache22:
-                self.services["llm_planner.service.Cache22"].init_service()
-            else:
-                self.services["llm_planner.service.HFServe"].init_service()
 
         elif select == "instruct":
             self.canonizer_ = instruct.Canonizer(self)

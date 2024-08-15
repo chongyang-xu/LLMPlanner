@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 
 from llm_planner.util import timing
+from llm_planner.util import model_type, ModelType
 
 from llm_planner.query import Query
 from .service import SingleLLMServe
@@ -26,12 +27,23 @@ class CachedServing22(SingleLLMServe):
             self.batch_size = cfg.get("batch_size", 4)
             self.cache_dir = cfg.get("cache_dir", tempfile.mkdtemp())
 
+        model_str = policy_param_.get("model", None)
+        assert model_str is not None
+        self.model_type = model_type(model_str)
+
     def init_service(self):
         if self.init_done:
             return
         # use openai api on default
-        self.impl = self.p_selector.services[
-            "llm_planner.service.OpenAIServe_API"]
+        if self.model_type == ModelType.OPENAI:
+            self.impl = self.p_selector.services[
+                "llm_planner.service.OpenAIServe_API"]
+        elif self.model_type == ModelType.ANTHROPIC:
+            self.impl = self.p_selector.services[
+                "llm_planner.service.AnthropicServe_API"]
+        else:
+            self.impl = self.p_selector.services["llm_planner.service.HFServe"]
+
         self.impl.init_service()
 
         self.cache_impl = Cache(self.cache_dir)

@@ -6,7 +6,7 @@ from llm_planner.service.service import SingleLLMServe
 
 from llm_planner.logger import Logger
 
-import openai
+from openai import OpenAI
 import os
 
 from dotenv import load_dotenv
@@ -31,7 +31,7 @@ class OpenAIServe_API(SingleLLMServe):
         # setting parameters
         #
         ##########################
-        self.model = policy_param_.get('model', "gpt-3.5-turbo")
+        self.model_str = policy_param_.get('model', "gpt-3.5-turbo")
         self.max_token = policy_param_.get('max_token', 16)
 
     def init_service(self):
@@ -39,30 +39,30 @@ class OpenAIServe_API(SingleLLMServe):
         if self.init_done:
             return
 
-        # self.model = AutoModelForCausalLM.from_pretrained(
-        #     self.model, device_map="auto").eval()
-
-        # self.tokenizer = AutoTokenizer.from_pretrained(self.model)
-        # self.tokenizer.padding_side = "left"
-        # self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.client = OpenAI()
 
         self.init_done = True
 
     @timing
     def work_on(self, q_list: List[Query]):
         self.init_service()
-        openai.api_key = self.api_key
         responses = []
-        batch = [str(q) for q in q_list]
-
-        response = openai.Completion.create(engine="gpt-3.5-turbo",
-                                            prompt=batch,
-                                            max_tokens=self.max_token,
-                                            stop=None,
-                                            temperature=0.7)
-
-        generated_text = response['choices'][0]['text'].strip()
-        responses.append(generated_text)
+        for q in q_list:
+            b = str(q)
+            completion = self.client.chat.completions.create(
+                model=self.model_str,
+                messages=[{
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                }, {
+                    "role": "user",
+                    "content": b,
+                }],
+                max_tokens=self.max_token,
+                stop=None,
+                temperature=0.7)
+            res = completion.choices[0].message.content
+            responses.append(res)
 
         for idx, o in enumerate(responses):
             q_list[idx].response = o

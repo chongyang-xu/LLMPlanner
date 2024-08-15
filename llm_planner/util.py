@@ -1,3 +1,4 @@
+from enum import Enum
 import sys, time
 import inspect
 import pynvml
@@ -106,3 +107,20 @@ def report_system_config():
     print('-' * 50)
     print('Python Version:', sys.version)
     print('-' * 50)
+
+
+class ModelType(Enum):
+    LOCAL = "Local"
+    OPENAI = "OpenAI"
+    ANTHROPIC = "Anthropic"
+
+
+def model_type(model: str):
+    if model.startswith("gpt-"):
+        return ModelType.OPENAI
+    elif model.startswith("claude-"):
+        return ModelType.ANTHROPIC
+    elif model.startswith("/"):
+        return ModelType.LOCAL
+    else:
+        return False
