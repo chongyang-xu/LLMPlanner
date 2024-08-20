@@ -24,7 +24,14 @@ git clone https://github.com/mpi-dsg/LLMPlanner.git
 cd LLMPlanner/
 ./scripts/wheel.sh
 ```
+
+#### Reinstall llm_planner
+Before using latest code inside directory llm_planner/, you need to reinstall llm_planner by
+```
+./scripts/wheel.sh
+```
 To intall third party modules, refer [here](./docs/third_party.md).
+
 
 ### Run an example
 After llm_planner is installed, an 'app' that uses llm_planner can be started.
