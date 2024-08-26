@@ -1,7 +1,7 @@
 # LLMPlanner
 
 ## About
-LLMPlanner is a planner for serving natural language requests. LLMPlanner takes queries in natual language and return responses to users. It optimizes usage of multiple services to lower down the cost of generating responses for user queries.
+LLMPlanner is a planner for serving natural language requests. LLMPlanner takes queries in natual language and return responses to users. It optimizes usage of multiple services to lower down the cost of generating responses for user queries. Find overview [here](./docs/overview.png).
 
 ## Quick start
 
