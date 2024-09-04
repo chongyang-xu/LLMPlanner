@@ -1,7 +1,7 @@
 # LLMPlanner
 
 ## About
-LLMPlanner is a planner for serving natural language requests. LLMPlanner takes queries in natual language and return responses to users. It optimizes usage of multiple services to lower down the cost of generating responses for user queries.
+LLMPlanner is a planner for serving natural language requests. LLMPlanner takes queries in natual language and return responses to users. It optimizes usage of multiple services to lower down the cost of generating responses for user queries. Find overview [here](./docs/overview.png).
 
 ## Quick start
 
@@ -24,7 +24,14 @@ git clone https://github.com/mpi-dsg/LLMPlanner.git
 cd LLMPlanner/
 ./scripts/wheel.sh
 ```
+
+#### Reinstall llm_planner
+Before using latest code inside directory llm_planner/, you need to reinstall llm_planner by
+```
+./scripts/wheel.sh
+```
 To intall third party modules, refer [here](./docs/third_party.md).
+
 
 ### Run an example
 After llm_planner is installed, an 'app' that uses llm_planner can be started.
