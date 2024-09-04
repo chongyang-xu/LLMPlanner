@@ -16,6 +16,8 @@ logger = Logger('TestBatching')
 
 policy_para: Dict[str, Any] = {
     "model": 'gpt-3.5-turbo',
+    "use_cache22": True,
+    "cache22" : {},
 }
 
 ps = PolicySelector(select="batching", policy_param_=policy_para)
