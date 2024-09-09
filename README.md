@@ -39,31 +39,23 @@ After llm_planner is installed, an 'app' that uses llm_planner can be started.
 This is an example sketch of an app:
 ```python
 
-policy_para: Dict[str, Any] = {
-    "model": '/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B/',
-}
+from llm_planner.message import Message
+from llm_planner.agents.miniLLM import MiniLLM
 
-# select a policy/optimization to use
-ps = PolicySelector(select="batching", policy_param_=policy_para)
+PROMPT = ...
+q_list = ...
 
-# create a orchestrator with the policy
-orch = Orchestrator(ps)
+llm = MiniLLM.start(max_token=16)
 
-# prepare a Message
-q = Message(qid, Message)
+for q in q_list:
+    msg = Message(prompt=q)
+    answer = llm.ask(msg)
+    print(answer["ret"][0])
 
-# submit the Message to orchestrator
-orch.inject_ingress([q])
-
-# run the planner
-orch.run()
-
-# extract the response
-eg = orch.inject_egress()
+llm.stop()
 ```
 
-### an example:
+### more examples:
 ```bash
-cd test/
-python test_policy_batching.py
+ls apps/
 ```
