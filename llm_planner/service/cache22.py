@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 from llm_planner.util import timing
 from llm_planner.util import model_type, ModelType
 
-from llm_planner.query import Query
+from llm_planner.message import Message
 from .service import SingleLLMServe
 
 from cachesaver.async_engine.typedefs import Request
@@ -53,7 +53,7 @@ class CachedServing22(SingleLLMServe):
         self.init_done = True
 
     @timing
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         self.init_service()
 
         reqs = [Request(str(q), 1, q.qid, "default") for q in q_list]
@@ -66,7 +66,7 @@ class CachedServing22(SingleLLMServe):
 
     async def request(self, prompt, num_needed=1):
 
-        q_list = [Query(qid=-1, query=prompt)]
+        q_list = [Message(qid=-1, Message=prompt)]
 
         ret = self.impl.work_on(q_list)
 

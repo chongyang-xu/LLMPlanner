@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from llm_planner.util import timing
-from llm_planner.query import Query, InstructQuery, Instruct
+from llm_planner.message import Message, InstructMessage, Instruct
 from .service import SingleLLMFinetune
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -117,10 +117,10 @@ class HFFullParameterFinetune(SingleLLMFinetune):
                                   args=self.sft_config)
 
     @timing
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         assert len(q_list) == 1
         q = q_list[0]
-        assert isinstance(q, InstructQuery)
+        assert isinstance(q, InstructMessage)
         assert q.instruct == Instruct.FINETUNE_FULL
 
         self.init_service(q.instruct_param)
@@ -246,10 +246,10 @@ class HFLoRAFinetune(SingleLLMFinetune):
         #        module = module.to(torch.float32)
 
     @timing
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         assert len(q_list) == 1
         q = q_list[0]
-        assert isinstance(q, InstructQuery)
+        assert isinstance(q, InstructMessage)
         assert q.instruct == Instruct.FINETUNE_LORA
 
         self.init_service(q.instruct_param)

@@ -6,7 +6,7 @@ from pandas import json_normalize
 import json
 
 from llm_planner.planner.queue import Ingress
-from llm_planner.query import Query, Stop
+from llm_planner.message import Message, Stop
 
 
 class SimilarQuestions(MiscDataset):
@@ -146,12 +146,12 @@ class SimilarQuestions(MiscDataset):
             ]
         }
 
-    def to_ingress(self, n_query=128, shuffle=True):
+    def to_ingress(self, n_Message=128, shuffle=True):
         qid = 0
         q_list = []
         for _, v in self.questions_dict.items():
             for question in v:
-                q = Query(qid=qid, query=question)
+                q = Message(qid=qid, Message=question)
                 q_list.append(q)
 
         if shuffle:

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ..query import Query
+from llm_planner.message import Message
 
 
 class Service(ABC):
@@ -14,7 +14,7 @@ class Service(ABC):
         pass
 
     @abstractmethod
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         pass
 
 

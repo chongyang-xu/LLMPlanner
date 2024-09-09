@@ -16,3 +16,7 @@ pip install datasets==2.20.0
 pip install openai==1.40.6
 pip install anthropic==0.34.0
 pip install datasets==2.20.0
+
+
+pip install deepdiff==8.0.1
+pip install diskcache==5.6.3

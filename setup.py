@@ -8,7 +8,7 @@ setup(
     author="Data Systems Group, MPI-SWS",
     author_email="foo@bar",
     url="foo.bar",
-    description="A Natural Language Query Planner",
+    description="A Natural Language Message Planner",
     long_description="A Planner for Serving Natural Language Requests",
     packages=find_packages(exclude=("experiments", "scripts", "third_party"),
                            include=['llm_planner', 'llm_planner.*']),

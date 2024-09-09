@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from llm_planner.util import timing
-from llm_planner.query import Query, InstructQuery, Instruct
+from llm_planner.message import Message, InstructMessage, Instruct
 
 from .service import SingleLLMTrain
 
@@ -113,10 +113,10 @@ class HFTrain(SingleLLMTrain):
                                data_collator=self.dataset.get_data_collator())
 
     @timing
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         assert len(q_list) == 1
         q = q_list[0]
-        assert isinstance(q, InstructQuery)
+        assert isinstance(q, InstructMessage)
         assert q.instruct == Instruct.TRAIN
 
         self.init_service(q.instruct_param)

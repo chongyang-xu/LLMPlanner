@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 
-from llm_planner.query import Query
+from llm_planner.message import Message
 from llm_planner.service.service import SingleLLMServe
 from llm_planner.util import timing, test_timing, is_typed_dict, get_gpu_name
 from llm_planner.logger import Logger
@@ -55,7 +55,7 @@ class VLLMServe(SingleLLMServe):
         self.init_done = True
 
     @timing
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         self.init_service()
 
         sampling_param = VLLMSamplingParams(temperature=0,
@@ -69,7 +69,7 @@ class VLLMServe(SingleLLMServe):
         return q_list
 
     @timing
-    def test_query(self, q_list: List[Query], max_tokens):
+    def test_Message(self, q_list: List[Message], max_tokens):
         sampling_param = VLLMSamplingParams(temperature=0,
                                             max_tokens=max_tokens)
 
@@ -95,7 +95,7 @@ class VLLMServe(SingleLLMServe):
             rets.append(o.outputs[0].text)
         return rets
 
-    def token(self, q_list: List[Query], seq_token_len=16):
+    def token(self, q_list: List[Message], seq_token_len=16):
         tokenized_input = []
         for q in q_list:
             out = self.tokenizer(str(q), return_tensors="pt", padding=True)

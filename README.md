@@ -49,10 +49,10 @@ ps = PolicySelector(select="batching", policy_param_=policy_para)
 # create a orchestrator with the policy
 orch = Orchestrator(ps)
 
-# prepare a query
-q = Query(qid, query)
+# prepare a Message
+q = Message(qid, Message)
 
-# submit the query to orchestrator
+# submit the Message to orchestrator
 orch.inject_ingress([q])
 
 # run the planner

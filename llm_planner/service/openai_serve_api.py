@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from llm_planner.util import timing
-from llm_planner.query import Query
+from llm_planner.message import Message
 from llm_planner.service.service import SingleLLMServe
 
 from llm_planner.logger import Logger
@@ -44,7 +44,7 @@ class OpenAIServe_API(SingleLLMServe):
         self.init_done = True
 
     @timing
-    def work_on(self, q_list: List[Query]):
+    def work_on(self, q_list: List[Message]):
         self.init_service()
         responses = []
         for q in q_list:
