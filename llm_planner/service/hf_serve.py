@@ -44,6 +44,8 @@ class HFServe(SingleLLMServe):
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
+        self.init_done = True
+
     @timing
     def work_on(self, q_list: List[str]):
         self.init_service()

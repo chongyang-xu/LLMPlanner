@@ -44,7 +44,7 @@ class OpenAIServe_API(SingleLLMServe):
         self.init_done = True
 
     @timing
-    def work_on(self, q_list: List[Message]):
+    def work_on(self, q_list: List[str]):
         self.init_service()
         responses = []
         for q in q_list:

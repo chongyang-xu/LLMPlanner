@@ -42,15 +42,17 @@ class LLMAgent(pykka.ThreadingActor):
             return msg
 
         # batching
-        if self.batch_size > 1 and len(self.batch) < self.batch_size:
+        if len(self.batch) < self.batch_size:
             self.batch.append(prompt)
-            return Message(content={"ret": [""]})
 
-        batch_msg = Message()
-        batch_msg["prompt"] = self.batch
-        ret_msg = self.receive(batch_msg)
-        self.batch.clear()
-        return ret_msg
+        if len(self.batch) < self.batch_size:
+            return Message(content={"ret": [""]})
+        else:
+            batch_msg = Message()
+            batch_msg["prompt"] = self.batch
+            ret_msg = self.receive(batch_msg)
+            self.batch.clear()
+            return ret_msg
 
     def receive(self, message: Message):
         print(message)
