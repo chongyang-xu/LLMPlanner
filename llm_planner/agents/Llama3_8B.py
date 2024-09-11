@@ -7,9 +7,9 @@ LLAMA3_8B_PATH = "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B-Instruct/"
 
 class Llama3_8B(LLMAgent):
 
-    def __init__(self):
+    def __init__(self, max_token=16):
         super().__init__()
-        policy_param_ = {"model": LLAMA3_8B_PATH, "max_token": 16}
+        policy_param_ = {"model": LLAMA3_8B_PATH, "max_token": max_token}
         self.serve = HFServe(None, policy_param_)
 
     def receive(self, message: Message):

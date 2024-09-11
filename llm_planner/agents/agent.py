@@ -26,7 +26,7 @@ class LLMAgent(pykka.ThreadingActor):
         cache_dir = f"/tmp/llm_planner/{uuid.uuid1()}"
         self.cache = Cache(cache_dir)
         self.batch = []
-        self.batch_size = 4
+        self.batch_size = 1
 
     def on_receive(self, message: Message):
 

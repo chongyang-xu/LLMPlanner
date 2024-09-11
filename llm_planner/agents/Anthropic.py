@@ -6,11 +6,11 @@ from llm_planner.service.anthropic_serve_api import AnthropicServe_API
 
 class Anthropic(LLMAgent):
 
-    def __init__(self):
+    def __init__(self, max_token=16):
         super().__init__()
         policy_param = {
             "model": "claude-3-5-sonnet-20240620",
-            "max_token": 16,
+            "max_token": max_token,
         }
         self.impl = AnthropicServe_API(None, policy_param)
 
