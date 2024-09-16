@@ -40,8 +40,8 @@ Response format:
 ```{revised_code}```
 """
 
-    def on_receive(self, message: Message):
-        print(f"SoftwareReviser:on_receive: {message}")
+    def receive(self, message: Message):
+        print(f"SoftwareReviser:receive: {message}")
 
         prompt = self.PROMPT_TEMPLATE.format(
             main_code=message["main.py"],
@@ -57,7 +57,7 @@ Response format:
         msg = Message(prompt=prompt)
         ret = self.llm_agent.ask(msg)
         new_code = ret["ret"][0]
-        print(f"SoftwareReviser:on_receive: got new code")
+        print(f"SoftwareReviser:receive: got new code")
 
         directory = "./snake_game_output"
         os.makedirs(directory, exist_ok=True)
@@ -68,7 +68,7 @@ Response format:
         with open(file_path, 'w') as file:
             file.write(new_code)
         print(f"SoftwareReviser wrote {file_path}")
-        print(f"SoftwareReviser:on_receive: Done")
+        print(f"SoftwareReviser:receive: Done")
 
 
 class SoftwareReviewer(Agent):
@@ -98,8 +98,8 @@ food.py:
 Comments:
 {review}"""
 
-    def on_receive(self, message: Message):
-        print(f"SoftwareReviewer:on_receive: {message}")
+    def receive(self, message: Message):
+        print(f"SoftwareReviewer:receive: {message}")
 
         self.codes[message["file_name"]] = message["code"]
 
@@ -115,7 +115,7 @@ Comments:
         ret = self.llm_agent.ask(msg)
         reviewer_response = ret["ret"][0]
 
-        print(f"SoftwareReviewer:on_receive: got review")
+        print(f"SoftwareReviewer:receive: got review")
 
         files = ["main.py", "game.py", "snake.py", "food.py"]
         self.revisers = []
@@ -137,7 +137,7 @@ Comments:
             reviser.tell(msg)
 
         self.codes.clear()
-        print(f"SoftwareReviewer:on_receive: Done")
+        print(f"SoftwareReviewer:receive: Done")
 
 
 class SoftwareCoder(Agent):
@@ -161,10 +161,10 @@ Response format:
 ```{code}```
 """
 
-    def on_receive(self, message: Message):
-        print(f"SoftwareCoder:on_receive: {message}")
+    def receive(self, message: Message):
+        print(f"SoftwareCoder:receive: {message}")
 
-        print(f"SoftwareCoder:on_receive: {message['file_name']}")
+        print(f"SoftwareCoder:receive: {message['file_name']}")
 
         prompt = self.PROMPT_TEMPLATE.format(
             architect_response=message["architect_response"],
@@ -180,10 +180,10 @@ Response format:
             "file_name": message["file_name"],
             "code": coder_response["ret"][0]
         })
-        print(f"SoftwareCoder:on_receive: got code")
+        print(f"SoftwareCoder:receive: got code")
 
         self.reviewer.tell(rev_msg)
-        print(f"SoftwareCoder:on_receive: Done")
+        print(f"SoftwareCoder:receive: Done")
 
 
 class SoftwareArchitect(Agent):
@@ -221,8 +221,8 @@ food.py:
 Code:```{food_api}```
 """
 
-    def on_receive(self, message: Message):
-        print(f"SoftwareArchitect:on_receive: {message}")
+    def receive(self, message: Message):
+        print(f"SoftwareArchitect:receive: {message}")
         msg = Message(prompt=self.PROMPT_TEMPLATE)
         ret = self.llm_agent.ask(msg)
         architect_response = ret["ret"][0]
@@ -242,7 +242,7 @@ Code:```{food_api}```
 
             coder.tell(msg)
 
-        print(f"SoftwareArchitect:on_receive: Done")
+        print(f"SoftwareArchitect:receive: Done")
 
 
 ###################
