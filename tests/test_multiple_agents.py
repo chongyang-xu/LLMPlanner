@@ -46,30 +46,9 @@ class SecondAgent(Agent):
         print(f"SecondAgent: Received '{content}' from {sender_id}")
 
 
-async def main():
-    system = System()
-    parent_agent = ParentAgent()
-    msg = Message()
-    msg['content'] = 'start'
-    system.send(None, parent_agent.id, msg)
-
-    await System.finish()
-
-
-System.start(main)
-"""
-async def main():
-    # Choose the scheduling algorithm
-    scheduler = Scheduler(scheduling_algorithm=Scheduler.priority_scheduling)
-
-    # Create ParentActor
-    parent_actor = ParentActor(scheduler)
-    # Send 'start' message to ParentActor
-    scheduler.send(None, parent_actor.id, {'content': 'start', 'priority': 1})
-
-    # Run the scheduler
-    await scheduler.run()
-
-# Run the event loop
-asyncio.run(main())
-"""
+system = System()
+parent_agent = ParentAgent()
+msg = Message()
+msg['content'] = 'start'
+system.send(None, parent_agent.id, msg)
+system.start()

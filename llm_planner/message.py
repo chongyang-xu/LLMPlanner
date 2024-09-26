@@ -21,7 +21,10 @@ class Message:
 
     # Getter for dictionary-style access
     def __getitem__(self, key: str) -> Any:
-        return self._content[key]
+        if key in self._content:
+            return self._content[key]
+        else:
+            return None
 
     # Setter for dictionary-style access
     def __setitem__(self, key: str, value: Any) -> None:

@@ -1,4 +1,5 @@
 from .actor import Actor
+from ..message import Message
 
 from deepdiff import DeepHash  # for caching
 from diskcache import Cache  # for caching
@@ -51,71 +52,50 @@ class Agent(Actor):
         return True
 
     async def on_receive(self, sender_id, message):
-        cache_hit = False
         if self.with_caching:
-            prompt = message["prompt"]
-            key = DeepHash(prompt)[prompt]
-            entries = self.cache.get(key, [])
+            if message['response'] is not None:  # response message
+                assert message[
+                    "content"] is None  # with request in the response message
 
-            if len(entries) > 0:
-                cache_hit = True
-
-                if self.return_value:
-                    self.system.actors[sender_id].futures[
-                        message.id].set_result(entries[0])
+                if self.with_batching:
+                    await self.on_process_batch(sender_id, message)
                 else:
-                    pass
-                    #self.system.actors[sender_id].futures[
-                    #    message.id].set_result(None)
-                return
+                    await self.on_process(sender_id, message)
 
-        assert not cache_hit
+            else:  # request message
+                assert message['content'] is not None
+                content = message["content"]
+                key = DeepHash(content)[content]
 
-        if self.with_batching:
-            await self.on_process_batch(sender_id, message)
+                entries = self.cache.get(key, [])
+
+                if len(entries) > 0:
+                    if entries[0] is not None:
+                        msg = Message()
+                        msg['request_message'] = message
+                        msg['response'] = entries[0]
+                        self.send(sender_id, msg)
+                else:
+                    if self.with_batching:
+                        await self.on_process_batch(sender_id, message)
+                    else:
+                        await self.on_process(sender_id, message)
         else:
-            await self.on_process(sender_id, message)
+            if self.with_batching:
+                await self.on_process_batch(sender_id, message)
+            else:
+                await self.on_process(sender_id, message)
 
     async def on_process(self, sender_id, message):
-        ret = await self.process(sender_id, message)
+        await self.process(sender_id, message)
 
-        if self.with_caching:
-            prompt = message["prompt"]
-            key = DeepHash(prompt)[prompt]
-            self.cache.set(key, [ret])
-
-        if self.return_value:
-            self.system.actors[sender_id].futures[message.id].set_result(ret)
-        else:
-            pass
-            #if sender_id is not None:
-            #    self.system.actors[sender_id].futures[
-            #        message.id].set_result(None)
-
-    async def on_process_batch(self, sender_ids, messages):
+    async def on_process_batch(self, sender_id, message):
         if len(self.batch) < self.batch_size:
             self.batch.append((sender_id, message))
 
         if len(self.batch) >= self.batch_size:
             ids, msgs = zip(*self.batch)
-            rets = await self.process_batch(ids, msgs)
-
-            if self.with_caching:
-                for i in range(len(ids)):
-                    prompt = msgs[i]["prompt"]
-                    key = DeepHash(prompt)[prompt]
-                    self.cache.set(key, [rets[i]])
-
-            if self.return_value:
-                for i in range(len(ids)):
-                    self.system.actors[ids[i]].futures[msgs[i].id].set_result(
-                        rets[i])
-            else:
-                pass
-                #for i in range(len(ids)):
-                #    self.system.actors[ids[i]].futures[
-                #        msgs[i].id].set_result(None)
-
+            await self.process_batch(ids, msgs)
             self.batch.clear()
 
     async def process(self, sender_id, message):
@@ -126,6 +106,18 @@ class Agent(Actor):
 
     def send(self, recipient_id, message):
         super().send(recipient_id, message)
+
+        if self.with_caching:
+            if message['response'] is not None:
+                assert message["request_message"] is not None
+
+                request_content = message["request_message"]["content"]
+                key = DeepHash(request_content)[request_content]
+
+                # assert not cache miss with request_content
+                entries = self.cache.get(key, [])
+                if len(entries) == 0:
+                    self.cache.set(key, [message["response"]])
 
         if not self.return_value:
             return None
