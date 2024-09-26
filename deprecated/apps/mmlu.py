@@ -1,7 +1,7 @@
 from datasets import load_dataset
 
 from llm_planner.message import Message
-from llm_planner.actor.system import System
+from llm_planner.agents.Llama3_8B import Llama3_8B
 from llm_planner.agents.miniLLM import MiniLLM
 
 PROMPT_TEMPLATE = """
@@ -31,26 +31,14 @@ for i in range(mmlu_subset.num_rows):
     q_list.append(q)
 print("Message preprocessing finish.")
 
-
 ###################
 # run test
 ###################
-async def main():
-    minillm = MiniLLM(max_token=4,
-                      return_value=True,
-                      with_batching=True,
-                      with_caching=True)
-    ret = []
+actor_ref = MiniLLM.start(max_token=16)
 
-    for q in q_list[:16]:
-        msg = Message(prompt=q)
-        r = minillm.send(minillm.id, msg)
-        ret.append(r)
+for q in q_list:
+    msg = Message(prompt=q)
+    answer = actor_ref.ask(msg)
+    print(answer["ret"][0])
 
-    await System.finish()
-
-    for r in ret:
-        print(await r.value())
-
-
-System.start(main)
+actor_ref.stop()

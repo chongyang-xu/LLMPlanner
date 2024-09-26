@@ -24,17 +24,17 @@ class Agent:
         self.dependent_agents = {}
 
         self.message_queue = []
+        self.futures = {}
 
         ALL_AGENTS[agent_name] = self
 
-    def add_dependency(self, agent: 'Agent', dependency_type: Dependency):
+    def add_dependency(self,
+                       agent: 'Agent',
+                       dependency_type: Dependency = Dependency.STRICT):
         self.dependencies[agent.name] = dependency_type
         self.dependent_agents[agent.name] = agent
 
     async def process(self, message: Message) -> None:
-        pass
-
-    def ask(self, message: Message) -> asyncio.Future:
         pass
 
     async def initialize(self) -> None:
@@ -47,6 +47,24 @@ class Agent:
         # Logic to determine if the agent can process the message
         # based on its current state and dependencies
         return True
+
+    def ask(self, message: Message) -> asyncio.Future:
+        self.message_queue.append(message)
+        self.futures[message.id] = asyncio.Future()
+
+        class FutureValue:
+
+            def __init__(self, futures, idx):
+                self.futures = futures
+                self.idx = idx
+
+            #def value(self):
+            # return read_value(self.futures[self.idx])
+
+            def value(self):
+                return self.futures[self.idx]
+
+        return FutureValue(self.futures, message.id)
 
 
 async def async_start(batching):

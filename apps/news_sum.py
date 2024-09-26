@@ -2,8 +2,8 @@ import json
 import time
 
 from llm_planner.message import Message
+from llm_planner.actor.system import System
 
-from llm_planner.agents.Llama3_8B import Llama3_8B
 from llm_planner.agents.miniLLM import MiniLLM
 
 #############
@@ -14,22 +14,32 @@ with open(news_dataset) as file:
     json_data = json.load(file)
 data = json_data
 
+
 ###################
 # run test
 ###################
-actor_ref = MiniLLM.start(max_token=128)
+async def main():
+    minillm = MiniLLM(max_token=16,
+                      return_value=True,
+                      with_batching=False,
+                      with_caching=True)
+    ret = []
 
-for news in data:
+    for news in data[:8]:
+        article = news["article"][:200]
+        summary = news["summary"]
 
-    start_time = time.time()
-    article = news["article"][:200]
-    summary = news["summary"]
+        PROMPT = f"Provide me a concise summary of this news:\n<news>\n{article}\n</news>"
 
-    PROMPT = f"Provide me a concise summary of this news:\n<news>\n{article}\n</news>"
+        msg = Message(prompt=PROMPT)
+        r = minillm.send(minillm.id, msg)
+        ret.append(r)
 
-    msg = Message(prompt=PROMPT)
-    answer = actor_ref.ask(msg)
-    print(answer["ret"][0])
-    break
+    await System.finish()
 
-actor_ref.stop()
+    for r in ret:
+        print(await r.value())
+        print("-" * 20)
+
+
+System.start(main)

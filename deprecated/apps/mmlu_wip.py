@@ -2,7 +2,7 @@ from datasets import load_dataset
 
 from llm_planner.message import Message
 from llm_planner.agents.miniLLM_wip import MiniLLM
-from llm_planner.agents.agent_wip import start_agents, read_value
+from llm_planner.agents.agent_wip import start_agents
 
 PROMPT_TEMPLATE = """
 Answer the following multiple choice question by giving the most appropriate response. Answer should be one among [A, B, C, D]
@@ -46,6 +46,6 @@ async def main():
     for i in ret:
         r = await i.value()
         print(r)
-
+ 
 
 start_agents(main)

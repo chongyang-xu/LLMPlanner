@@ -21,24 +21,6 @@ class MiniLLM(Agent):
 
         self.futures = {}
 
-    def ask(self, message: Message) -> asyncio.Future:
-        self.message_queue.append(message)
-        self.futures[message.id] = asyncio.Future()
-
-        class FutureValue:
-
-            def __init__(self, futures, idx):
-                self.futures = futures
-                self.idx = idx
-
-            #def value(self):
-            # return read_value(self.futures[self.idx])
-
-            def value(self):
-                return self.futures[self.idx]
-
-        return FutureValue(self.futures, message.id)
-
     async def process(self, message: Message) -> None:
 
         with ThreadPoolExecutor() as executor:

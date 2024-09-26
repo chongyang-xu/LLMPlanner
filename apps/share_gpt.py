@@ -2,8 +2,8 @@ import json
 import time
 
 from llm_planner.message import Message
+from llm_planner.actor.system import System
 
-from llm_planner.agents.Llama3_8B import Llama3_8B
 from llm_planner.agents.miniLLM import MiniLLM
 
 #############
@@ -16,30 +16,44 @@ with open(fname, 'r') as file:
 ###################
 # run test
 ###################
-actor_ref = MiniLLM.start(max_token=16)
 
-for chat in data:
-    id = chat['id']
-    conversations = chat['conversations']
 
-    prompt = ""
-    for round in conversations:
-        from_who = round['from']
-        what_value = round['value']
+async def main():
+    minillm = MiniLLM(max_token=16,
+                      return_value=True,
+                      with_batching=False,
+                      with_caching=True)
+    ret = []
 
-        prompt += "User: \n" if from_who == "human" else "Assistant: \n"
-        prompt += what_value
+    for chat in data[:1]:
+        id = chat['id']
+        conversations = chat['conversations']
 
-        if from_who == "gpt":
-            # fill content from dataset
-            continue
+        prompt = ""
+        for round in conversations:
+            from_who = round['from']
+            what_value = round['value']
 
-        msg = Message(prompt=prompt)
-        answer = actor_ref.ask(msg)
+            prompt += "User: \n" if from_who == "human" else "Assistant: \n"
+            prompt += what_value
 
-        print(answer["ret"])
-        break
+            if from_who == "gpt":
+                # fill content from dataset
+                continue
 
-    break
+            msg = Message(prompt=prompt)
+            r = minillm.send(minillm.id, msg)
+            ret.append(r)
 
-actor_ref.stop()
+            # break
+
+        # break
+
+    await System.finish()
+
+    for r in ret:
+        print(await r.value())
+        print('-' * 20)
+
+
+System.start(main)
