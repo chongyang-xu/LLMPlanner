@@ -46,3 +46,30 @@ class MiniLLM(Agent):
                 msg['request_message'] = msgs[i]
                 msg['response'] = rets[i]
                 self.send(senders[i], msg)
+
+
+
+"""
+    async def process(self, message: Message) -> None:
+
+        with ThreadPoolExecutor() as executor:
+            loop = asyncio.get_running_loop()
+            future = loop.run_in_executor(executor, self.blocking_serve,
+                                          message)
+            self.futures[message.id] = future
+
+    def blocking_serve(self, message: Message):
+        start = time.time()
+
+        msg = Message()
+        if isinstance(message["prompt"], list):
+            msg["ret"] = self.serve.work_on(message["prompt"])
+        else:
+            msg["ret"] = self.serve.work_on([message["prompt"]])
+
+        end = time.time()
+
+        # print(f"blocking_serve: {end-start:.2f} sec")
+        # print(f"blocking_serve: {msg}")
+        return msg
+"""
