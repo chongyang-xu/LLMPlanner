@@ -6,11 +6,6 @@ from llm_planner.agents.miniLLM import MiniLLM
 
 import os, re
 
-def printf(input):
-    print("-" * 50)
-    print(input)
-    print("-" * 50)
-
 
 class SotAgent(Agent):
 
