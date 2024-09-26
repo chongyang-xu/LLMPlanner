@@ -40,6 +40,7 @@ class System:
         for aid, actor in self.actors.items():
             if not actor.mailbox.empty():
                 return True
+
         return False
 
     async def round_robin(self):
@@ -76,5 +77,5 @@ class System:
             print("Stopping the loop.")
 
     @classmethod
-    def start(cls, func):
-        asyncio.run(func())
+    def start(cls):
+        asyncio.run(cls.finish())
