@@ -12,7 +12,7 @@ class MiniLLM(Agent):
     def __init__(self,
                  max_token=16,
                  return_value=False,
-                 with_batching=True,
+                 with_batching=False,
                  with_caching=False):
         super().__init__(return_value=return_value,
                          with_batching=with_batching,
@@ -21,12 +21,14 @@ class MiniLLM(Agent):
         self.serve = HFServe(None, policy_param_)
 
     async def process(self, sender_id, message: Message):
-        if message['content'] is not None:
+        if message["content"] is not None:
+
             r = self.serve.work_on([message["content"]])
             if r is not None:
                 msg = Message()
                 msg['request_message'] = message
                 msg['response'] = r[0]
+
                 self.send(sender_id, msg)
 
     async def process_batch(self, sender_ids, messages):
@@ -46,7 +48,6 @@ class MiniLLM(Agent):
                 msg['request_message'] = msgs[i]
                 msg['response'] = rets[i]
                 self.send(senders[i], msg)
-
 
 
 """

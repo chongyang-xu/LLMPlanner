@@ -1,21 +1,14 @@
-from llm_planner.agents.Llama3_8B import Llama3_8B
-from llm_planner.agents.miniLLM import MiniLLM
-from llm_planner.agents.SemanticScholar import SemanticScholar
-
-from llm_planner.message import Message
-from llm_planner.agents.agent import Agent, AgentRef, agent_stop_all
-
 import os
 import json
 from os import path as osp
 
-import logging
-import signal
+from llm_planner.message import Message
+from llm_planner.actor.system import System
+from llm_planner.actor.agent import Agent
 
-import pykka.debug
-
-logging.basicConfig(level=logging.DEBUG)
-signal.signal(signal.SIGUSR1, pykka.debug.log_thread_tracebacks)
+from llm_planner.agents.miniLLM import MiniLLM
+from llm_planner.agents.Llama3_8B import Llama3_8B
+from llm_planner.agents.SemanticScholar import SemanticScholar
 
 
 def extract_json(txt):
@@ -44,15 +37,24 @@ def extract_json(txt):
 
 class NoveltyChecker(Agent):
 
-    def __init__(self, llm_agent: AgentRef, semantic_search: AgentRef):
+    def __init__(self, llm_agent, semantic_search):
         super().__init__()
         self.MAX_NOVEL_ITER = 3
 
         self.llm_agent = llm_agent
         self.semantic_search = semantic_search
 
-        self.counter = 0
+        # self.add_dependency(llm_agent, semantic_search)
+
+        self.total_ideas = 0
         self.novel_ideas = []
+        self.all_codes = {}
+        self.all_ideas = {}
+        # book keeping if idx is novel
+        self.idx_novel = {}
+        # book keeping idx -> history
+        self.msg_history = {}
+        self.papers_str = {}
 
         self.NOVELTY_SYSTEM_PROMPT = """
 You are an ambitious AI PhD student who is looking to publish a paper that will contribute significantly to the field.
@@ -104,111 +106,199 @@ In <JSON>, respond in JSON format with ONLY the following field:
 A query will work best if you are able to recall the exact name of the paper you are looking for, or the authors.
 This JSON will be automatically parsed, so ensure the format is precise.'''
 
-    def on_receive(self, message: Message):
-        print(f"NoveltyChecker:on_receive: {message}")
+    async def process(self, sender_id, message: Message):
+        # print(f"NoveltyChecker:on_receive: {message}")
 
-        self.counter += 0
+        if message["response"] is not None:
+            rmsg = message["request_message"]
+            idx = rmsg["idx"]
+            total = rmsg["total"]
+            novel_iter = rmsg["novel_iter"]
 
-        idx = message["idx"]
-        total = message["total"]
-        idea = message["idea"]
-        base_dir = message["base_dir"]
+            idea = self.all_ideas[idx]
+            code = self.all_codes[idx]
 
-        if "novel" in idea:
-            print(f"Skipping idea {idx}, already checked.")
-            return
+            if rmsg["to_llm_agent"] is not None:
+                j = novel_iter
 
-        task_description_prompt = message["task_description"]
-        code = message["code"]
+                text = message["response"]
 
-        novel = False
-        msg_history = []
-        papers_str = ""
+                self.msg_history[idx] = self.msg_history[idx] + [{
+                    "role": "assistant",
+                    "content": f"{text}"
+                }]
 
-        for j in range(self.MAX_NOVEL_ITER):
+                if "decision made: novel" in text.lower():
+                    print("Decision made: novel after round", j)
+                    self.idx_novel[idx] = True
+                    self.save_novel_ideas()
+                    return
+
+                if "decision made: not novel" in text.lower():
+                    print("Decision made: not novel after round", j)
+                    self.idx_novel[idx] = False
+                    self.save_novel_ideas()
+                    return
+
+                json_output = extract_json(text)
+                # print(json_output)
+                assert json_output is not None, "Failed to extract JSON from LLM output"
+
+                query = json_output["Query"]
+                qmsg = Message()
+                qmsg["query"] = query
+                qmsg["idx"] = idx
+                qmsg["total"] = total
+                qmsg["novel_iter"] = j + 1
+                qmsg["to_semantic_search"] = True
+
+                self.send(self.semantic_search.id, qmsg)
+
+            elif rmsg["to_semantic_search"] is not None:
+                papers = message["response"]
+
+                papers_str = ""
+                if papers is None:
+                    papers_str = "No papers found."
+                else:
+                    paper_strings = []
+                    for i, paper in enumerate(papers):
+                        paper_strings.append(
+                            """{i}: {title}. {authors}. {venue}, {year}.\nNumber of citations: {cites}\nAbstract: {abstract}"""
+                            .format(
+                                i=i,
+                                title=paper["title"],
+                                authors=paper["authors"],
+                                venue=paper["venue"],
+                                year=paper["year"],
+                                cites=paper["citationCount"],
+                                abstract=paper["abstract"],
+                            ))
+                    papers_str = "\n\n".join(paper_strings)
+
+                j = rmsg["novel_iter"] + 1
+                if j >= self.MAX_NOVEL_ITER:
+                    print("Decision made: not novel after round", j)
+                    self.idx_novel[idx] = False
+                    self.save_novel_ideas()
+                    return
+
+                try:
+                    system_prompt = self.NOVELTY_SYSTEM_PROMPT.format(
+                        num_rounds=self.MAX_NOVEL_ITER,
+                        task_description=task_description_prompt,
+                        code=code,
+                    )
+                    user_prompt = self.NOVELTY_USER_PROMPT.format(
+                        current_round=j + 1,
+                        num_rounds=self.MAX_NOVEL_ITER,
+                        idea=idea,
+                        last_query_results=papers_str,
+                    )
+
+                    self.msg_history[idx] = self.msg_history[idx] + [{
+                        "role": "user",
+                        "content": f"{user_prompt}"
+                    }]
+
+                    msg = Message()
+                    msg["content"] = [{
+                        "role": "system",
+                        "content": f"{system_prompt}"
+                    }] + self.msg_history[idx]
+                    msg["idx"] = idx
+                    msg["total"] = total
+                    msg["novel_iter"] = j
+                    msg["to_llm_agent"] = True
+
+                    self.send(self.llm_agent.id, msg)
+                except Exception as e:
+                    print(f"Error: {e} {idx}@{j}")
+
+        elif message["novel_checker"] is not None:
+            # self.counter += 1
+
+            idx = message["idx"]
+            total = message["total"]
+            idea = message["idea"]
+            self.base_dir = message["base_dir"]
+
+            self.all_ideas[idx] = idea
+            self.total_ideas = total
+
+            if idx in self.idx_novel:
+                print(f"Skipping idea {idx}, already checked.")
+                return
+
+            self.task_description_prompt = message["task_description"]
+            code = message["code"]
+            self.all_codes[idx] = code
+
+            self.msg_history[idx] = []
+            self.papers_str[idx] = ""
+
+            j = 0
             print(
                 f"NoveltyChecker:on_receive: idea@{idx}/{total} novel_iter@{j}")
 
             try:
                 system_prompt = self.NOVELTY_SYSTEM_PROMPT.format(
                     num_rounds=self.MAX_NOVEL_ITER,
-                    task_description=task_description_prompt,
+                    task_description=self.task_description_prompt,
                     code=code,
                 )
                 user_prompt = self.NOVELTY_USER_PROMPT.format(
                     current_round=j + 1,
                     num_rounds=self.MAX_NOVEL_ITER,
                     idea=idea,
-                    last_query_results=papers_str,
+                    last_query_results=self.papers_str[idx],
                 )
 
-                msg_history = [f"User:\n{user_prompt}"]
+                self.msg_history[idx] = self.msg_history[idx] + [{
+                    "role": "user",
+                    "content": f"{user_prompt}"
+                }]
 
-                msg_hist_str = "\n\n".join(msg_history)
-                msg = Message(
-                    prompt=f"User:\n{system_prompt}\n\n{msg_hist_str}")
-                ret = self.llm_agent.ask(msg)
+                msg = Message()
+                msg["content"] = [{
+                    "role": "system",
+                    "content": f"{system_prompt}"
+                }] + self.msg_history[idx]
+                msg["idx"] = idx
+                msg["total"] = total
+                msg["novel_iter"] = 0
+                msg["to_llm_agent"] = True
 
-                text = ret["ret"][0]
-                msg_history = msg_history + [f"Assistant:\n{text}"]
-
-                if "decision made: novel" in text.lower():
-                    print("Decision made: novel after round", j)
-                    novel = True
-                    break
-                if "decision made: not novel" in text.lower():
-                    print("Decision made: not novel after round", j)
-                    break
-
-                json_output = extract_json(text)
-                assert json_output is not None, "Failed to extract JSON from LLM output"
-
-                query = json_output["Query"]
-                qmsg = Message()
-                qmsg["query"] = query
-                ret = self.semantic_search.ask(qmsg)
-                papers = ret["ret"]
-
-                if papers is None:
-                    papers_str = "No papers found."
-
-                paper_strings = []
-                for i, paper in enumerate(papers):
-                    paper_strings.append(
-                        """{i}: {title}. {authors}. {venue}, {year}.\nNumber of citations: {cites}\nAbstract: {abstract}"""
-                        .format(
-                            i=i,
-                            title=paper["title"],
-                            authors=paper["authors"],
-                            venue=paper["venue"],
-                            year=paper["year"],
-                            cites=paper["citationCount"],
-                            abstract=paper["abstract"],
-                        ))
-                papers_str = "\n\n".join(paper_strings)
-
+                self.send(self.llm_agent.id, msg)
             except Exception as e:
-                print(f"Error: {e}")
-                continue
-        # end for j in range(MAX_NOVEL_ITER):
+                print(f"Error: {e} {idx}@{j}")
 
-        if novel:
-            self.novel_ideas.append(idea)
+    def save_novel_ideas(self):
+        novel_ideas = []
+        if self.total_ideas == len(self.all_ideas):
+            if self.total_ideas == len(self.idx_novel):
+                for idx, novel in self.idx_novel.items():
+                    if novel:
+                        novel_ideas.append(self.all_ideas[idx])
 
-        if self.counter == total:
-            results_file = osp.join(base_dir, "novel_ideas.json")
-            with open(results_file, "w") as f:
-                json.dump(ideas, f, indent=4)
+                results_file = osp.join(self.base_dir, "novel_ideas.json")
+                with open(results_file, "w") as f:
+                    json.dump(novel_ideas, f, indent=4)
 
 
 class IdeaGenerator(Agent):
 
-    def __init__(self, llm_agent: AgentRef):
+    def __init__(self, llm_agent):
         super().__init__()
         self.NUM_REFLECTIONS = 5
         self.MAX_GEN_IDEAS = 1
         self.llm_agent = llm_agent
         self.semantic_search = None
+
+        # dictionary generating idx to history
+        self.msg_history = {}
+        # dictionary generating idx to reflection idx
+        self.reflection_idx = {}
 
         self.IDEA_PROMPT_FIRST = """
 {task_description}
@@ -272,67 +362,83 @@ NEW IDEA JSON:
 If there is nothing to improve, simply repeat the previous JSON EXACTLY after the thought and include "I am done" at the end of the thoughts but before the JSON.
 ONLY INCLUDE "I am done" IF YOU ARE MAKING NO MORE CHANGES."""
 
-    def on_receive(self, message: Message):
-        print(f"IdeaGenerator:on_receive: {message}")
+    async def process(self, sender_id, message: Message):
+        # print(f"IdeaGenerator:on_receive: {message}")
 
-        BASE_DIR = message["base_dir"]
-        EXPERIMENT = message["experiment"]
-        assert EXPERIMENT in ["grokking", "nanoGPT"]
+        if message["response"] is not None:
+            rmsg = message["request_message"]
+            gen_iidx = rmsg["gen_iidx"]
+            reflection_idx = rmsg["reflection_idx"]
+            system_prompt = rmsg["system_prompt"]
 
-        base_dir = osp.join(BASE_DIR, "templates", EXPERIMENT)
+            if rmsg["reflection_idx"] is None:
+                # print("resp: ", rmsg["content"][-100:])
+                text = message["response"]
+                # print("resp: text: ", text)
 
-        idea_str_archive = []
-        with open(osp.join(base_dir, "seed_ideas.json"), "r") as f:
-            seed_ideas = json.load(f)
-        for seed_idea in seed_ideas:
-            idea_str_archive.append(json.dumps(seed_idea))
-
-        # read code
-        with open(osp.join(base_dir, "experiment.py"), "r") as f:
-            code = f.read()
-
-        # read prompt
-        with open(osp.join(base_dir, "prompt.json"), "r") as f:
-            prompt = json.load(f)
-
-        idea_system_prompt = prompt["system"]
-        task_description_prompt = prompt["task_description"]
-
-        idea_examples = "\n\n".join(idea_str_archive)
-
-        ## idea generation
-        ###############################
-        for iidx in range(self.MAX_GEN_IDEAS):
-            ###############################
-            print(f"Generating idea {iidx + 1}/{self.MAX_GEN_IDEAS}")
-            try:
-                user_prompt = self.IDEA_PROMPT_FIRST.format(
-                    task_description=task_description_prompt,
-                    code=code,
-                    idea_examples=idea_examples,
-                    num_reflections=self.NUM_REFLECTIONS)
-                system_prompt = idea_system_prompt
-
-                msg_history = [f"User:\n{user_prompt}"]
-
-                msg_hist_str = "\n\n".join(msg_history)
-                msg = Message(
-                    prompt=f"User:\n{system_prompt}\n\n{msg_hist_str}")
-                ret = self.llm_agent.ask(msg)
-
-                text = ret["ret"][0]
-                msg_history = msg_history + [f"Assistant:\n{text}"]
+                self.msg_history[gen_iidx] = self.msg_history[gen_iidx] + [{
+                    "role": "assistant",
+                    "content": f"{text}"
+                }]
 
                 # parse json output
                 json_output = extract_json(text)
+                # print(text)
                 assert json_output is not None, f"Failed to extract JSON from LLM output"
 
                 if self.NUM_REFLECTIONS < 2:
-                    continue
+                    return
+
+                # start reflecting
+                j = 0
+                print(f"Reflecting idea {gen_iidx + 1} @ {j}th reflection")
 
                 #####################################
-                for j in range(self.NUM_REFLECTIONS - 1):
-                    print(f"Reflecting idea {iidx + 1} @ {j}th reflection")
+                # sequential
+                user_prompt = self.IDEA_PROMPT_REFLECTION.format(
+                    current_round=j + 2, num_reflections=self.NUM_REFLECTIONS)
+
+                self.msg_history[gen_iidx] = self.msg_history[gen_iidx] + [{
+                    "role": "user",
+                    "content": f"{user_prompt}"
+                }]
+
+                msg = Message()
+                msg["content"] = [{
+                    "role": "system",
+                    "content": f"{system_prompt}"
+                }] + self.msg_history[gen_iidx]
+                msg["gen_iidx"] = gen_iidx
+                msg["reflection_idx"] = j
+
+                self.send(self.llm_agent.id, msg)
+
+            elif rmsg["reflection_idx"] is not None:
+                j = reflection_idx
+                text = message["response"]
+                self.msg_history[gen_iidx] = self.msg_history[gen_iidx] + [{
+                    "role": "assistant",
+                    "content": f"{text}"
+                }]
+
+                # print(text)
+                json_output = extract_json(text)
+                assert json_output is not None, f"Failed to extract JSON from LLM output"
+                if "I am done" in text:
+                    print(
+                        f"Idea generation converged after {j + 2} iterations.")
+                    self.idea_str_archive.append(json.dumps(json_output))
+                    self.save_and_check_ideas()
+                    return
+
+                if reflection_idx + 1 >= self.NUM_REFLECTIONS:
+                    # finished after NUM_REFLECTIONS attempts
+                    self.idea_str_archive.append(json.dumps(json_output))
+                    self.save_and_check_ideas()
+                    return
+                else:
+                    j = reflection_idx + 1
+                    print(f"Reflecting idea {gen_iidx + 1} @ {j}th reflection")
 
                     #####################################
                     # sequential
@@ -340,72 +446,131 @@ ONLY INCLUDE "I am done" IF YOU ARE MAKING NO MORE CHANGES."""
                         current_round=j + 2,
                         num_reflections=self.NUM_REFLECTIONS)
 
-                    msg_history = msg_history + [f"User:\n{user_prompt}"]
-                    msg_hist_str = "\n\n".join(msg_history)
-                    msg = Message(
-                        prompt=f"User:\n{system_prompt}\n\n{msg_hist_str}")
+                    self.msg_history[gen_iidx] = self.msg_history[gen_iidx] + [{
+                        "role": "user",
+                        "content": f"{user_prompt}"
+                    }]
 
-                    ret = self.llm_agent.ask(msg)
-                    text = ret["ret"]
-                    msg_history = msg_history + [f"Assistant:\n{text}"]
+                    msg = Message()
+                    msg["content"] = [{
+                        "role": "system",
+                        "content": f"{system_prompt}"
+                    }] + self.msg_history[gen_iidx]
+                    msg["gen_iidx"] = gen_iidx
+                    msg["reflection_idx"] = j
 
-                    print(msg["prompt"])
-                    print("-" * 50)
-                    print("-" * 50)
-                    print(text)
-                    json_output = extract_json(text)
-                    assert json_output is not None, f"Failed to extract JSON from LLM output"
-                    if "I am done" in text:
-                        print(
-                            f"Idea generation converged after {j + 2} iterations."
-                        )
-                        break
+                    self.send(self.llm_agent.id, msg)
 
-                idea_str_archive.append(json.dumps(json_output))
-            except Exception as e:
-                print(f"Failed to generate idea: {e}")
-                continue
+        elif message["experiment"] is not None:
+
+            BASE_DIR = message["base_dir"]
+            EXPERIMENT = message["experiment"]
+            assert EXPERIMENT in ["grokking", "nanoGPT"]
+
+            self.base_dir = osp.join(BASE_DIR, "templates", EXPERIMENT)
+
+            self.idea_str_archive = []
+            with open(osp.join(self.base_dir, "seed_ideas.json"), "r") as f:
+                seed_ideas = json.load(f)
+            for seed_idea in seed_ideas:
+                self.idea_str_archive.append(json.dumps(seed_idea))
+            self.num_seed_ideas = len(seed_ideas)
+
+            # read code
+            with open(osp.join(self.base_dir, "experiment.py"), "r") as f:
+                self.code = f.read()
+
+            # read prompt
+            with open(osp.join(self.base_dir, "prompt.json"), "r") as f:
+                prompt = json.load(f)
+
+            idea_system_prompt = prompt["system"]
+            self.task_description_prompt = prompt["task_description"]
+
+            idea_examples = "\n\n".join(self.idea_str_archive)
+
+            ## idea generation
+            ###############################
+            for iidx in range(self.MAX_GEN_IDEAS):
+                ###############################
+                print(f"Generating idea {iidx + 1}/{self.MAX_GEN_IDEAS}")
+                try:
+                    user_prompt = self.IDEA_PROMPT_FIRST.format(
+                        task_description=self.task_description_prompt,
+                        code=self.code,
+                        idea_examples=idea_examples,
+                        num_reflections=self.NUM_REFLECTIONS)
+                    system_prompt = idea_system_prompt
+
+                    self.msg_history[iidx] = [{
+                        "role": "user",
+                        "content": f"{user_prompt}"
+                    }]
+
+                    msg = Message()
+                    msg["content"] = [{
+                        "role": "system",
+                        "content": f"{system_prompt}"
+                    }] + self.msg_history[iidx]
+                    # print('-'*50)
+                    # print(msg["content"])
+                    # print('-'*50)
+                    msg["gen_iidx"] = iidx
+                    msg["system_prompt"] = system_prompt
+                    self.send(self.llm_agent.id, msg)
+                except Exception as e:
+                    print(f"Failed to generate idea: {e}")
+                    print(self.msg_history[iidx])
+                    import traceback
+                    traceback.print_exc()
+                    continue
+
+    def save_and_check_ideas(self):
+        if len(self.idea_str_archive
+              ) < self.MAX_GEN_IDEAS + self.num_seed_ideas:
+            return
 
         ## SAVE IDEAS
-        ideas = []
-        for idea_str in idea_str_archive:
-            ideas.append(json.loads(idea_str))
+        self.ideas = []
+        for idea_str in self.idea_str_archive:
+            self.ideas.append(json.loads(idea_str))
 
-        with open(osp.join(base_dir, "save_ideas.json"), "w") as f:
-            json.dump(ideas, f, indent=4)
+        with open(osp.join(self.base_dir, "save_ideas.json"), "w") as f:
+            json.dump(self.ideas, f, indent=4)
 
         ## CHECK
-        self.semantic_search = SemanticScholar.start()
-        print(f"IdeaGenerator:on_receive: start semantic_search")
-
-        for idx, idea in enumerate(ideas):
+        self.semantic_search = SemanticScholar()
+        # print(f"IdeaGenerator:on_receive: start semantic_search")
+        for idx, idea in enumerate(self.ideas):
             msg = Message()
             msg["idx"] = idx
-            msg["total"] = len(ideas)
+            msg["total"] = len(self.ideas)
             msg["idea"] = idea
 
-            msg["base_dir"] = base_dir
-            msg["code"] = code
-            msg["task_description"] = task_description_prompt
+            msg["base_dir"] = self.base_dir
+            msg["code"] = self.code
+            msg["task_description"] = self.task_description_prompt
+            msg["novel_checker"] = True
 
-            checker = NoveltyChecker.start(self.llm_agent, self.semantic_search)
-            print(f"IdeaGenerator:on_receive: start NoveltyChecker")
+            checker = NoveltyChecker(self.llm_agent, self.semantic_search)
+            # print(f"IdeaGenerator:on_receive: start NoveltyChecker")
 
-            checker.tell(msg)
+            self.send(checker.id, msg)
 
 
 ###################
 # run test
 ###################
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-minillm_ref = MiniLLM.start(max_token=4096)
-idea_generator = IdeaGenerator.start(minillm_ref)
+#minillm = MiniLLM(max_token=1024)
+llama = Llama3_8B(max_token=1024)
+idea_generator = IdeaGenerator(llama)
 
-begin = Message()
+begin = Message(uidx=1)
 begin["base_dir"] = "/home/cxu/ws/llm/LLMPlanner/apps/ai_scientist"
 begin["experiment"] = "grokking"
 
-idea_generator.tell(begin)
+idea_generator.send(idea_generator.id, begin)
 
-agent_stop_all()
+System.start()

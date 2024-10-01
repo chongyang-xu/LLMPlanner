@@ -6,5 +6,13 @@
         "Interestingness": 6,
         "Feasibility": 4,
         "Novelty": 4
+    },
+    {
+        "Name": "optimizer_grokking_analysis",
+        "Title": "Optimizer Grokking Analysis: Investigating the Relationship between Optimizers and Generalization",
+        "Experiment": "Modify the experiment to analyze the optimization process and model behavior during training. Compare the performance of different optimizers and identify patterns or correlations between the optimizer and the emergence of grokking.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8
     }
 ]

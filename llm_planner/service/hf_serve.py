@@ -46,11 +46,21 @@ class HFServe(SingleLLMServe):
 
         self.init_done = True
 
+    def formatting_content(self, input_var):
+        if isinstance(input_var, list):
+            if isinstance(input_var[0], dict):
+                return self.tokenizer.apply_chat_template(
+                    input_var, tokenize=False, add_generation_prompt=True)
+            else:
+                assert False, "a single request with multiple text chunk is unexpected"
+        assert isinstance(input_var, str)
+        return input_var
+
     @timing
     def work_on(self, q_list: List[str]):
         self.init_service()
 
-        batch = [q for q in q_list]
+        batch = [self.formatting_content(q) for q in q_list]
         tokenized_batch = self.tokenizer(
             batch,
             return_tensors="pt",
@@ -63,23 +73,16 @@ class HFServe(SingleLLMServe):
                                       max_new_tokens=self.max_token,
                                       do_sample=False)
 
+        new_outputs = [
+            out_row[len(in_row):]
+            for out_row, in_row in zip(outputs, tokenized_batch["input_ids"])
+        ]
+
         decoded_outputs = self.tokenizer.batch_decode(
-            outputs,
+            new_outputs,
             skip_special_tokens=
             True,  # Removes special tokens like [PAD], <s>, </s>
             clean_up_tokenization_spaces=
-            True  # Removes extra spaces in the output)
+            True  # Removes extra spaces in the output),
         )
-        # print(f"decoded_outputs={decoded_outputs}")
-        new_outputs = [
-            out_row[len(in_row):].strip()
-            for out_row, in_row in zip(decoded_outputs, batch)
-        ]
-
-        # print(f"new_outputs={new_outputs}")
-        return new_outputs
-
-        # for idx, o in enumerate(ret):
-        #    q_list[idx].response = o
-
-        # return q_list
+        return decoded_outputs

@@ -295,6 +295,7 @@ async def main():
     start_idx = 0
     time_results = list()
     while start_idx < len(time_prompts):
+        # TODO() mark openai call
         temp_res = await generate_from_openai_chat_completion(
             client,
             time_prompts[start_idx:start_idx + 80],
