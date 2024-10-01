@@ -28,7 +28,8 @@ class Agent(Actor):
         self.with_caching = with_caching
 
         if self.with_caching:
-            cache_dir = f"/tmp/llm_planner/agent"
+            class_name = self.__class__.__name__
+            cache_dir = f"/tmp/llm_planner/agent/{class_name}"
             self.cache = Cache(cache_dir)
 
         if self.with_batching:
@@ -64,7 +65,7 @@ class Agent(Actor):
 
             else:  # request message
                 assert message['content'] is not None
-                content = message["content"]
+                content = str(message["content"])
                 key = DeepHash(content)[content]
 
                 entries = self.cache.get(key, [])
@@ -111,7 +112,7 @@ class Agent(Actor):
             if message['response'] is not None:
                 assert message["request_message"] is not None
 
-                request_content = message["request_message"]["content"]
+                request_content = str(message["request_message"]["content"])
                 key = DeepHash(request_content)[request_content]
 
                 # assert not cache miss with request_content

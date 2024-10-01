@@ -1,7 +1,10 @@
-import os
-import requests
+from llm_planner.actor.agent import Agent
 
-from llm_planner.agents.agent import Agent
+from llm_planner.message import Message
+
+import os
+import aiohttp
+import asyncio
 
 S2_API_KEY = os.environ["S2_API_KEY"] if "S2_API_KEY" in os.environ else None
 
@@ -12,36 +15,42 @@ class SemanticScholar(Agent):
         super().__init__()
         self.result_limit = 10
 
-    def receive(self, message):
-
+    async def process(self, sender_id, message: Message):
         query = message["query"]
-        print(f"SemanticScholar:receive: query={query}")
 
-        rsp = requests.get(
-            "https://api.semanticscholar.org/graph/v1/paper/search",
-            headers={"X-API-KEY": S2_API_KEY},
-            params={
-                "query":
-                    query,
-                "limit":
-                    result_limit,
-                "fields":
-                    "title,authors,venue,year,abstract,citationStyles,citationCount",
-            },
-        )
-        print(f"Response Status Code: {rsp.status_code}")
-        print(f"Response Content: {rsp.text[:500]}"
-             )  # Print the first 500 characters of the response content
-        rsp.raise_for_status()
-        results = rsp.json()
-        total = results["total"]
+        # request header
+        url = "https://api.semanticscholar.org/graph/v1/paper/search"
+        # Define headers and parameters
+        headers = {"X-API-KEY": S2_API_KEY}
+        params = {
+            "query":
+                query,
+            "limit":
+                self.result_limit,
+            "fields":
+                "title,authors,venue,year,abstract,citationStyles,citationCount",
+        }
 
-        if not total:
-            return None
-        msg = Message()
-        msg["ret"] = results["data"]
-        print(msg)
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url,
+                                       headers=headers,
+                                       params=params,
+                                       timeout=10) as response:
+                    if response.status == 200:
+                        ret = await response.json()
+                        if ret is not None:
+                            msg = Message()
+                            msg['request_message'] = message
+                            msg['response'] = ret
+                            self.send(sender_id, msg)
+                            await asyncio.sleep(1)
+                    else:
+                        return f"Error: Received non-200 status code {response.status}"
 
-        time.sleep(1.0)
-
-        return msg
+        except aiohttp.ClientConnectorError:
+            return f"Error: Could not connect to {url}"
+        except asyncio.TimeoutError:
+            return f"Error: Request to {url} timed out"
+        except Exception as e:
+            return f"Error: An unexpected error occurred: {str(e)}"

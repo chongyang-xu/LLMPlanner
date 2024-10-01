@@ -6,6 +6,7 @@ from llm_planner.actor.system import System
 from llm_planner.actor.agent import Agent
 
 from llm_planner.agents.miniLLM import MiniLLM
+from llm_planner.agents.Llama3_8B import Llama3_8B
 
 
 #############
@@ -43,15 +44,21 @@ class CoQAAgent(Agent):
             data_idx = rmsg["data_idx"]
 
             resp = message["response"]
-            self.sample_history[sid] = self.sample_history[sid] + f" {resp}"
+            # print(f"resp = {resp}")
+            self.sample_history[sid] = self.sample_history[sid] + [{
+                "role": "assistant",
+                "content": resp
+            }]
 
             round_idx += 1
             if round_idx < self.sample_round[sid]:
                 roundd = self.data[data_idx]["questions"][round_idx]
                 input_text = roundd["input_text"]
 
-                self.sample_history[sid] = self.sample_history[
-                    sid] + f"\n\nUser: {input_text}\n\nAssistant: "
+                self.sample_history[sid] = self.sample_history[sid] + [{
+                    "role": "user",
+                    "content": input_text
+                }]
 
                 # print(f"{id}@{round_idx}: {resp}")
 
@@ -63,14 +70,15 @@ class CoQAAgent(Agent):
 
                 self.send(self.minillm.id, msg)
             else:
-                print(f"{sid}@{round_idx}: {self.sample_history[sid]}")
-                #print(f"{sid}@{round_idx}: {resp}")
+                print(f"{sid}@{round_idx}")
+                for d in self.sample_history[sid]:
+                    print(d["role"], ": ", d["content"])
 
         elif message["content"] is not None:
             if message["content"] == "start":
 
                 self.minillm = MiniLLM(max_token=16,
-                                       return_value=True,
+                                       return_value=False,
                                        with_batching=True,
                                        with_caching=True)
 
@@ -78,17 +86,22 @@ class CoQAAgent(Agent):
 
                     sid = sample["id"]
                     story = sample["story"]
-                    prompt = f"You are a helping assistant to answer user questions according to:\n{story}"
+                    prompt = f"You are a helping assistant to answer user questions according to:\n{story}\n\n"
 
-                    self.sample_history[sid] = prompt
+                    self.sample_history[sid] = [{
+                        "role": "system",
+                        "content": prompt
+                    }]
                     self.sample_round[sid] = len(sample["questions"])
                     self.sample_round_idx[sid] = 0
 
                     roundd = sample["questions"][0]
                     input_text = roundd["input_text"]
 
-                    self.sample_history[sid] = self.sample_history[
-                        sid] + f"\n\nUser: {input_text}\n\nAssistant: "
+                    self.sample_history[sid] = self.sample_history[sid] + [{
+                        "role": "user",
+                        "content": input_text
+                    }]
 
                     msg = Message()
                     msg["content"] = self.sample_history[sid]

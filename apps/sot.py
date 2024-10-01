@@ -3,6 +3,7 @@ from llm_planner.actor.system import System
 from llm_planner.actor.agent import Agent
 
 from llm_planner.agents.miniLLM import MiniLLM
+from llm_planner.agents.Llama3_8B import Llama3_8B
 
 import os, re
 
@@ -72,7 +73,7 @@ Write it **very shortly** in 1~2 sentence and do not continue with other points!
             rmsg = message["request_message"]
             if rmsg["outline"] is not None:
                 outline = message["response"]
-                # printf(f"outline : {outline}")
+                print(f"outline : {outline}")
                 # Extract points.
                 re_result = re.findall(r"(\d+)\.\s?([\s\S]+?)(?=\n|\n*$)",
                                        outline)
@@ -134,13 +135,13 @@ Write it **very shortly** in 1~2 sentence and do not continue with other points!
             self.minillm = MiniLLM(max_token=16,
                                    return_value=True,
                                    with_batching=False,
-                                   with_caching=True)
+                                   with_caching=False)
 
             request = message["content"]
             splits = self.OUTLINE_PROMPT.split(self.PROMPT_ROLE_SWITCH_STR)
-
-            partial_answer = splits[1]
-            prompt = f"User:\n {splits[0].format(request=request)}\n\n {partial_answer}"
+            partial_answer = splits[1].strip()
+            # print(f"partial_answer={partial_answer}")
+            prompt = f"User:\n {splits[0].format(request=request)}\n{partial_answer}"
             # print(f"outline prompt: {prompt}\n{'-'*10}")
             msg = Message()
             msg["content"] = prompt
