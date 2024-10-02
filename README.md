@@ -38,24 +38,24 @@ After llm_planner is installed, an 'app' that uses llm_planner can be started.
 
 This is an example sketch of an app:
 ```python
+class Printer(Agent):
 
-from llm_planner.message import Message
-from llm_planner.agents.miniLLM import MiniLLM
+    async def process(self, sender_id, message):
+        content = message['content']
+        print(content)
 
-PROMPT = ...
-q_list = ...
 
-llm = MiniLLM.start(max_token=16)
+printer = Printer()
+system = System()
 
-for q in q_list:
-    msg = Message(prompt=q)
-    answer = llm.ask(msg)
-    print(answer["ret"][0])
+msg = Message()
+msg['content'] = 'start'
+system.send(None, printer.id, msg)
 
-llm.stop()
+system.start()
 ```
 
 ### more examples:
 ```bash
-ls apps/
+ls tests/ apps/
 ```
