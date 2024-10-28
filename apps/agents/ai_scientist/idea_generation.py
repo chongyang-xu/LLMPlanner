@@ -145,7 +145,7 @@ This JSON will be automatically parsed, so ensure the format is precise.'''
                 assert json_output is not None, "Failed to extract JSON from LLM output"
 
                 query = json_output["Query"]
-                qmsg = Message()
+                qmsg = message.spawn()
                 qmsg["query"] = query
                 qmsg["idx"] = idx
                 qmsg["total"] = total
@@ -201,7 +201,7 @@ This JSON will be automatically parsed, so ensure the format is precise.'''
                         "content": f"{user_prompt}"
                     }]
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = [{
                         "role": "system",
                         "content": f"{system_prompt}"
@@ -259,7 +259,7 @@ This JSON will be automatically parsed, so ensure the format is precise.'''
                     "content": f"{user_prompt}"
                 }]
 
-                msg = Message()
+                msg = message.spawn()
                 msg["content"] = [{
                     "role": "system",
                     "content": f"{system_prompt}"
@@ -403,7 +403,7 @@ ONLY INCLUDE "I am done" IF YOU ARE MAKING NO MORE CHANGES."""
                     "content": f"{user_prompt}"
                 }]
 
-                msg = Message()
+                msg = message.spawn()
                 msg["content"] = [{
                     "role": "system",
                     "content": f"{system_prompt}"
@@ -451,7 +451,7 @@ ONLY INCLUDE "I am done" IF YOU ARE MAKING NO MORE CHANGES."""
                         "content": f"{user_prompt}"
                     }]
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = [{
                         "role": "system",
                         "content": f"{system_prompt}"
@@ -507,7 +507,7 @@ ONLY INCLUDE "I am done" IF YOU ARE MAKING NO MORE CHANGES."""
                         "content": f"{user_prompt}"
                     }]
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = [{
                         "role": "system",
                         "content": f"{system_prompt}"
@@ -542,7 +542,7 @@ ONLY INCLUDE "I am done" IF YOU ARE MAKING NO MORE CHANGES."""
         self.semantic_search = SemanticScholar()
         # print(f"IdeaGenerator:on_receive: start semantic_search")
         for idx, idea in enumerate(self.ideas):
-            msg = Message()
+            msg = message.spawn()
             msg["idx"] = idx
             msg["total"] = len(self.ideas)
             msg["idea"] = idea

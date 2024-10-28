@@ -10,7 +10,7 @@ class Foo(Agent):
         content = message['content']
         if content == 'start':
             print("Foo: Starting")
-            msg = Message()
+            msg = message.spawn()
             msg["content"] = "hello"
             self.send(self.id, msg)
         else:

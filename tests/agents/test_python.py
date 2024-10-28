@@ -2,7 +2,7 @@ from llm_planner.message import Message
 from llm_planner.actor.agent import Agent
 from llm_planner.actor.system import System
 
-from llm_planner.agents.Human import Human
+from llm_planner.agents.Python import Python
 
 
 class Foo(Agent):
@@ -10,12 +10,13 @@ class Foo(Agent):
     async def process(self, sender_id, message):
         content = message['content']
         if content == 'start':
-            human = Human()
-            msg = Message()
-            msg["content"] = 'Hi, how are you?'
-            self.send(human.id, msg)
+            pi = Python()
+            msg = message.spawn()
+            msg["content"] = "with open('test_python.txt', 'w') as f:\n\tf.write('test')\n\tprint('test print')"
+            self.send(pi.id, msg)
+
         else:
-            print("---Human response---")
+            print("---response---")
             print(message["response"])
 
 

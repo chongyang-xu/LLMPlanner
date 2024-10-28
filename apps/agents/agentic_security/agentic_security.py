@@ -80,7 +80,7 @@ class AgenticSecurity(Agent):
 
                     # tokens += len(prompt.split())
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = prompt
                     msg["module_idx"] = module_idx
                     msg["dataset_name"] = module.dataset_name

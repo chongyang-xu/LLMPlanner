@@ -13,7 +13,7 @@ class ParentAgent(Agent):
         if content == 'start':
             print("ParentAgent: Starting ChildAgent")
             child_Agent = ChildAgent()
-            msg = Message()
+            msg = message.spawn()
             msg['content'] = 'Hello Child'
             self.send(child_Agent.id, msg)
 
@@ -21,7 +21,7 @@ class ParentAgent(Agent):
             print(f"ParentAgent: Received response '{content}' from ChildAgent")
             print("ParentAgent: Starting SecondAgent")
             second_Agent = SecondAgent()
-            msg = Message()
+            msg = message.spawn()
             msg['content'] = content
             self.send(second_Agent.id, msg)
         else:
@@ -34,7 +34,7 @@ class ChildAgent(Agent):
         content = message['content']
         print(f"ChildAgent: Received '{content}' from {sender_id}")
         response = f"Processed '{content}'"
-        msg = Message()
+        msg = message.spawn()
         msg['content'] = response
         self.send(sender_id, {'content': response})
 

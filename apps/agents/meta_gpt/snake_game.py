@@ -72,7 +72,7 @@ Response format:
                 other_filename2=message["other_filename2"],
                 other_filename3=message["other_filename3"],
                 revised_code="{revised_code}")
-            msg = Message()
+            msg = message.spawn()
             msg["content"] = prompt
             msg["file_name"] = message["file_name"]
 
@@ -117,7 +117,7 @@ Comments:
             for idx in range(len(files)):
                 reviser = SoftwareReviser(self.llm_agent)
                 self.revisers.append(reviser)
-                msg = Message()
+                msg = message.spawn()
                 msg["main.py"] = self.codes["main.py"]
                 msg["snake.py"] = self.codes["snake.py"]
                 msg["game.py"] = self.codes["game.py"]
@@ -145,7 +145,7 @@ Comments:
                 game_code=self.codes["game.py"],
                 food_code=self.codes["food.py"],
                 review="{review}")
-            msg = Message()
+            msg = message.spawn()
             msg["content"] = prompt
             self.send(self.llm_agent.id, msg)
 
@@ -191,7 +191,7 @@ Response format:
                 other_filename3=message["other_filename3"],
                 code="{code}")
 
-            msg = Message()
+            msg = message.spawn()
             msg["content"] = prompt
             msg["file_name"] = message["file_name"]
 
@@ -245,7 +245,7 @@ Code:```{food_api}```
             for idx in range(len(files)):
                 coder = SoftwareCoder(self.llm_agent, self.reviewer)
                 self.coders.append(coder)
-                msg = Message()
+                msg = message.spawn()
                 msg["architect_response"] = architect_response
                 msg["file_name"] = files[idx]
                 msg["other_filename1"] = files[(idx + 1) % 4]
@@ -255,7 +255,7 @@ Code:```{food_api}```
                 self.send(coder.id, msg)
 
         elif message["content"] == "start":
-            msg = Message()
+            msg = message.spawn()
             msg["content"] = self.PROMPT_TEMPLATE
             self.send(self.llm_agent.id, msg)
 

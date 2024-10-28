@@ -48,23 +48,25 @@ class OpenAIServe_API(SingleLLMServe):
         self.init_service()
         responses = []
         for q in q_list:
-            b = str(q)
+            # b = str(q)
             completion = self.client.chat.completions.create(
                 model=self.model_str,
-                messages=[{
-                    "role": "system",
-                    "content": "You are a helpful assistant."
-                }, {
-                    "role": "user",
-                    "content": b,
-                }],
+                messages=q,
+                #[{
+                #    "role": "system",
+                #    "content": "You are a helpful assistant."
+                #}, {
+                #    "role": "user",
+                #    "content": b,
+                #}],
                 max_tokens=self.max_token,
                 stop=None,
                 temperature=0.7)
             res = completion.choices[0].message.content
             responses.append(res)
 
-        for idx, o in enumerate(responses):
-            q_list[idx].response = o
+        return responses
+        #for idx, o in enumerate(responses):
+        #    q_list[idx].response = o
 
-        return q_list
+        #return q_list

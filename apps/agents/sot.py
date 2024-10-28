@@ -114,7 +114,7 @@ Write it **very shortly** in 1~2 sentence and do not continue with other points!
 
                     # printf(f"point_prompt : {point_prompt}")
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = point_prompt
                     msg["point"] = point
                     msg["point_outline"] = point_outline
@@ -143,7 +143,7 @@ Write it **very shortly** in 1~2 sentence and do not continue with other points!
             # print(f"partial_answer={partial_answer}")
             prompt = f"User:\n {splits[0].format(request=request)}\n{partial_answer}"
             # print(f"outline prompt: {prompt}\n{'-'*10}")
-            msg = Message()
+            msg = message.spawn()
             msg["content"] = prompt
             msg["outline"] = True
             msg["origin_req"] = request

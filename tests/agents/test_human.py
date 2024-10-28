@@ -2,7 +2,7 @@ from llm_planner.message import Message
 from llm_planner.actor.agent import Agent
 from llm_planner.actor.system import System
 
-from llm_planner.agents.Printer import Printer
+from llm_planner.agents.Human import Human
 
 
 class Foo(Agent):
@@ -10,16 +10,13 @@ class Foo(Agent):
     async def process(self, sender_id, message):
         content = message['content']
         if content == 'start':
-            printer = Printer()
-            msg = Message()
-            msg["content"] = 'printer.txt'
-            self.send(printer.id, msg)
-            msg["content"] = 'ibm.png'
-            self.send(printer.id, msg)
-
+            human = Human()
+            msg = message.spawn()
+            msg["content"] = 'Hi, how are you?'
+            self.send(human.id, msg)
         else:
-            print("---response---")
-            print(message["pdf_file"])
+            print("---Human response---")
+            print(message["response"])
 
 
 system = System()

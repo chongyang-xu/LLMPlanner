@@ -40,7 +40,7 @@ class SemanticScholar(Agent):
                     if response.status == 200:
                         ret = await response.json()
                         if ret is not None:
-                            msg = Message()
+                            msg = message.spawn()
                             msg['request_message'] = message
                             msg['response'] = ret
                             self.send(sender_id, msg)

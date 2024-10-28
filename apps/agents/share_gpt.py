@@ -56,7 +56,7 @@ class ShareGPTAgent(Agent):
                             # fill content from dataset
                             continue
 
-                        msg = Message()
+                        msg = message.spawn()
                         msg["content"] = prompt
                         r = self.send(minillm.id, msg)
 

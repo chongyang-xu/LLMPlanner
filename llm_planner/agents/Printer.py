@@ -97,7 +97,7 @@ class Printer(Agent):
                 pdf_path = self.convert_to_pdf(path, filename)
 
                 # Prepare the response message with the PDF file path
-                response_msg = Message()
+                response_msg = message.spawn()
                 response_msg['request_message'] = message
                 response_msg['pdf_file'] = pdf_path
 

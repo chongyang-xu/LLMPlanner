@@ -48,7 +48,7 @@ class AnthropicServe_API(SingleLLMServe):
         self.init_service()
         responses = []
         for q in q_list:
-            b = str(q)
+            # b = str(q)
 
             response = self.client.beta.prompt_caching.messages.create(
                 model=self.model_str,
@@ -64,14 +64,17 @@ class AnthropicServe_API(SingleLLMServe):
                         #}
                     },
                 ],
-                messages=[{
-                    "role": "user",
-                    "content": b
-                }],
+                messages=q
+                #[{
+                #    "role": "user",
+                #    "content": b
+                #}],
             )
             responses.append(response.content[0].text)
 
-        for idx, o in enumerate(responses):
-            q_list[idx].response = o
+        return responses
 
-        return q_list
+        #for idx, o in enumerate(responses):
+        #    q_list[idx].response = o
+
+        #return q_list

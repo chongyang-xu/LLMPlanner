@@ -17,7 +17,7 @@ class Human(Agent):
             human_response = await self.async_input(
                 f"Please response to this request:\n{message['content']}\n")
             # Prepare the response message
-            msg = Message()
+            msg = message.spawn()
             msg['request_message'] = message
             msg['response'] = human_response
 

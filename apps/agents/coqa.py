@@ -62,7 +62,7 @@ class CoQAAgent(Agent):
 
                 # print(f"{id}@{round_idx}: {resp}")
 
-                msg = Message()
+                msg = message.spawn()
                 msg["content"] = self.sample_history[sid]
                 msg["sample_id"] = sid
                 msg["sample_round_idx"] = round_idx
@@ -103,7 +103,7 @@ class CoQAAgent(Agent):
                         "content": input_text
                     }]
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = self.sample_history[sid]
                     msg["sample_id"] = sid
                     msg["sample_round_idx"] = 0

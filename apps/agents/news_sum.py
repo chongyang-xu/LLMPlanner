@@ -48,7 +48,7 @@ class NewsSumAgent(Agent):
 
                     PROMPT = f"Provide me a concise summary of this news:\n<news>\n{article}\n</news>"
 
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = PROMPT
 
                     self.send(minillm.id, msg)

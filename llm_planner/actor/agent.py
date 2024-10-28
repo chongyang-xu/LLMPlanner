@@ -72,7 +72,7 @@ class Agent(Actor):
 
                 if len(entries) > 0:
                     if entries[0] is not None:
-                        msg = Message()
+                        msg = message.spawn()
                         msg['request_message'] = message
                         msg['response'] = entries[0]
                         self.send(sender_id, msg)

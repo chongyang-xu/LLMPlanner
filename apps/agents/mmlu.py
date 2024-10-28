@@ -59,7 +59,7 @@ class MMLUAgent(Agent):
                                   with_caching=True)
 
                 for q in self.q_list:
-                    msg = Message()
+                    msg = message.spawn()
                     msg["content"] = q
                     self.send(minillm.id, msg)
 
