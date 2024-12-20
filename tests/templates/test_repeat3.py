@@ -1,7 +1,6 @@
-from llm_planner.message import Message
 from llm_planner.templates.template import Template
 
-import random
+from datetime import datetime
 
 
 def integrate(msgs):
@@ -39,5 +38,32 @@ def update(msg):
     return msgs
 
 
-test = Template().input().map(update).reduce(integrate).print()
+def append_timestamp(string, format="%Y-%m-%d %H:%M:%S"):
+    # Get the current timestamp
+    timestamp = datetime.now().strftime(format)
+    # Append the timestamp to the string
+    return f"{string}\n{timestamp}"
+
+
+def append_ts(msg):
+    msg["content"] = append_timestamp(msg["content"])
+    return msg
+
+
+def append_a(msg):
+    msg["content"] += "a"
+    return msg
+
+
+def append_b(msg):
+    msg["content"] += "b"
+    return msg
+
+
+#sub_sub_temp = Template().map(update).reduce(integrate).map(append_ts)
+
+sub_sub_temp = Template().map(append_b)
+sub_temp = Template().map(append_a).repeat(2, sub_sub_temp)
+test = Template().input().repeat(3, sub_temp).print()
+
 test.start(["strawberry contains #? 'r'"])

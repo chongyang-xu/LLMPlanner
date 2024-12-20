@@ -18,9 +18,8 @@ def true_or_false(msg):
     return 'r' in msg["content"]
 
 
-true_block = Template().map(pre_append_ts).done()
-false_block = Template().map(post_append_ts).done()
-test = Template().input().branch(true_or_false, true_block,
-                                 false_block).print().done()
+true_block = Template().map(pre_append_ts)
+false_block = Template().map(post_append_ts)
+test = Template().input().branch(true_or_false, true_block, false_block).print()
 
 test.start(["1+1=?", "strawberry contains #? 'r'", "your name is"])

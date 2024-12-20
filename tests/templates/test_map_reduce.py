@@ -30,6 +30,6 @@ def integrate(msgs):
 
 
 queries = ["test"]
-test = Template()
+test = Template().input().map(update).filter(ok).reduce(integrate).print()
 
-test.input(queries).map(update).filter(ok).reduce(integrate).print().done()
+test.start(queries)

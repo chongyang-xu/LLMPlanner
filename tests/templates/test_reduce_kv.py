@@ -59,7 +59,7 @@ def integrate(msgs):
     return msg
 
 
-test = Template().input().map(update).reduce(integrate).print().done()
+test = Template().input().map(update).reduce(integrate).print()
 test.start([
     "strawberry contains #? 'r'",
     "Raindrops dance on the rooftops high, Restless whispers from the sky."

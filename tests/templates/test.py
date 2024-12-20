@@ -15,5 +15,6 @@ def update(msg):
     return msgs
 
 
-test = Template()
-test.input(["test"]).print().start()
+test = Template().input().print()
+
+test.start(["test"])

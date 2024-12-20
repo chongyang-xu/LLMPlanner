@@ -32,6 +32,6 @@ def update(msg):
     return msgs
 
 
-test = Template().input().map(update).print().done()
+test = Template().input().map(update).print()
 
 test.start(["strawberry contains #? 'r'"])

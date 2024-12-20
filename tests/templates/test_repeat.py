@@ -15,7 +15,7 @@ def append_ts(msg):
     return msg
 
 
-sub_template = Template().map(append_ts).done()
-test = Template().input().repeat(3, sub_template).print().done()
+sub_template = Template().map(append_ts)
+test = Template().input().repeat(3, sub_template).print()
 
 test.start(["strawberry contains #? 'r'"])

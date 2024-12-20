@@ -10,5 +10,5 @@ def ok(msg: Message):
         return False
 
 
-test2 = Template().input().filter(ok).ask("mini_llm").print().done()
+test2 = Template().input().filter(ok).ask("mini_llm").print()
 test2.start(["1+1=?", "strawberry contains #? 'r'", "your name is"])

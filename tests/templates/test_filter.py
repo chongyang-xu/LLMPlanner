@@ -10,6 +10,6 @@ def ok(msg: Message):
         return False
 
 
-test = Template().input().filter(ok).print().done()
+test = Template().input().filter(ok).print()
 
 test.start(["1+1=?", "strawberry contains #? 'r'", "your name is"])
