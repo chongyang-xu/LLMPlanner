@@ -20,3 +20,5 @@ pip install python-dotenv==1.0.1
 
 pip install deepdiff==8.0.1
 pip install diskcache==5.6.3
+
+pip install cairosvg

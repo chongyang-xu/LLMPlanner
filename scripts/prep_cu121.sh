@@ -20,3 +20,5 @@ pip install datasets==2.20.0
 
 pip install deepdiff==8.0.1
 pip install diskcache==5.6.3
+
+pip install cairosvg
