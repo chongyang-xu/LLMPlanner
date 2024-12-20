@@ -5,6 +5,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Image
 
+from cairosvg import svg2png
+
 import os
 
 
@@ -16,6 +18,9 @@ class Printer(Agent):
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
+    def convert_svg_to_png(self, svg_path, png_path):
+        svg2png(url=svg_path, write_to=png_path)
+
     def convert_to_pdf(self, path, filename):
         # Determine the file extension
         file_extension = os.path.splitext(path)[1].lower()
@@ -24,9 +29,13 @@ class Printer(Agent):
         c = canvas.Canvas(file_path, pagesize=letter)
 
         # Check if the path is an image, text file, or .docx file
-        if file_extension in ['.png', '.jpg', '.jpeg', '.gif']:
+        if file_extension in ['.png', '.jpg', '.jpeg', '.gif', '.svg']:
             # Handle image files
-            self.add_image_to_pdf(c, path)
+            fpath = path
+            if file_extension == '.svg':
+                fpath = path[:-3] + 'png'
+                self.convert_to_pdf(path, fpath)
+            self.add_image_to_pdf(c, fpath)
         elif file_extension == '.txt':
             # Handle text files
             self.add_text_to_pdf(c, path)
