@@ -144,6 +144,6 @@ def assemble(msgs):
 
 
 sot = Template().input().map(outline_prompt).ask("mini_llm").map(
-    split_outline).ask("mini_llm").reduce(assemble).print().done()
+    split_outline).ask("mini_llm").reduce(assemble).print()
 
 sot.start(["What are the best large language models?"])

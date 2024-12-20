@@ -33,7 +33,7 @@ def prepare_data():
     return q_list
 
 
-mmlu = Template().input().ask("mini_llm").print().done()
+mmlu = Template().input().ask("mini_llm").print()
 
 q_list = prepare_data()
 mmlu.start(q_list[:4])

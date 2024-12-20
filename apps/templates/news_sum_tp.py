@@ -32,7 +32,7 @@ def prompt(message: Message):
 ###################
 # run test
 ###################
-news_sum = Template().input().map(prompt).ask("mini_llm").print().done()
+news_sum = Template().input().map(prompt).ask("mini_llm").print()
 
 data = prepare_data()
 news_sum.start(data[:4])

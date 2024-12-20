@@ -82,9 +82,9 @@ def clean(message: Message):
     return msg
 
 
-a_round = Template().map(question).ask("mini_llm").map(finish_round).done()
-coqa_tp = Template().input().map(sys_prompt).repeat(
-    n_times, a_round).map(clean).print().done()
+a_round = Template().map(question).ask("mini_llm").map(finish_round)
+coqa_tp = Template().input().map(sys_prompt).repeat(n_times,
+                                                    a_round).map(clean).print()
 
 data = prepare_data()
 coqa_tp.start(data[:4])

@@ -42,6 +42,6 @@ def prompt(message: Message):
     return msgs
 
 
-share_gpt = Template().input().map(prompt).ask("mini_llm").print().done()
+share_gpt = Template().input().map(prompt).ask("mini_llm").print()
 data = prepare_data()
 share_gpt.start(data[:4])
