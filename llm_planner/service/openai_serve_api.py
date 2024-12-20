@@ -47,7 +47,13 @@ class OpenAIServe_API(SingleLLMServe):
     def work_on(self, q_list: List[str]):
         self.init_service()
         responses = []
-        for q in q_list:
+        for m in q_list:
+
+            if isinstance(m, str):
+                q = [{"role": "user", "content": m}]
+            else:
+                q = m
+
             # b = str(q)
             completion = self.client.chat.completions.create(
                 model=self.model_str,

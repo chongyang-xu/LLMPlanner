@@ -47,8 +47,12 @@ class AnthropicServe_API(SingleLLMServe):
     def work_on(self, q_list: List[str]):
         self.init_service()
         responses = []
-        for q in q_list:
+        for m in q_list:
             # b = str(q)
+            if isinstance(m, str):
+                q = [{"role": "user", "content": m}]
+            else:
+                q = m
 
             response = self.client.beta.prompt_caching.messages.create(
                 model=self.model_str,
