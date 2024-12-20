@@ -45,8 +45,8 @@ class Template:
                         self.send(self.template.receiver_of(self), msg)
 
         pi = private_input(self)
-        self.actors.append(pi)
 
+        self._append_op(pi)
         return self  # Return the same object for chaining
 
     def ask(self, llm_name):
@@ -76,8 +76,8 @@ class Template:
                     self.send(receiver_id, message)
 
         pask = private_ask(self, llm_name)
-        self.actors.append(pask)
 
+        self._append_op(pask)
         return self
 
     def map(self, map_function):
@@ -101,8 +101,8 @@ class Template:
                     self.send(self.template.receiver_of(self), msgs)
 
         pm = private_map(self)
-        self.actors.append(pm)
 
+        self._append_op(pm)
         return self
 
     def filter(self, filter_function):
@@ -122,8 +122,8 @@ class Template:
                         self.template.msg_to_reduce[mid] -= 1
 
         pf = private_filter(self)
-        self.actors.append(pf)
 
+        self._append_op(pf)
         return self
 
     def reduce(self, reduce_function):
@@ -153,8 +153,8 @@ class Template:
                     del self.req_msg[oid]
 
         pr = private_reduce(self)
-        self.actors.append(pr)
 
+        self._append_op(pr)
         return self
 
     def repeat(self, times, sub_block):
@@ -189,7 +189,8 @@ class Template:
 
         prpt = private_repeat(self)
         sub_block.sender_receiver[sub_block.out_id] = prpt.id
-        self.actors.append(prpt)
+
+        self._append_op(prpt)
         return self
 
     def branch(self, condition, true_block, false_block):
@@ -218,7 +219,8 @@ class Template:
         pb = private_branch(self)
         true_block.sender_receiver[true_block.out_id] = pb.id
         false_block.sender_receiver[false_block.out_id] = pb.id
-        self.actors.append(pb)
+
+        self._append_op(pb)
         return self
 
     def print(self):
@@ -234,11 +236,14 @@ class Template:
                 print('-' * 20)
 
         pp = private_print(self)
-        self.actors.append(pp)
 
+        self._append_op(pp)
         return self
 
-    def done(self):
+    def _append_op(self, actor_op):
+
+        self.actors.append(actor_op)
+
         self.in_id = self.actors[0].id
         self.out_id = self.actors[-1].id
         for i in range(len(self.actors) - 1):
