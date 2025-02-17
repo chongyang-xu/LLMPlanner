@@ -16,7 +16,7 @@ class Message:
         if prompt is not None:
             self._content["prompt"] = prompt
         self.id = 0
-        self.tid = 0
+        self.tid = [0]
         # Increment the class-level id counter and assign it to the instance
         Message._id_counter += 1
         self.id = Message._id_counter

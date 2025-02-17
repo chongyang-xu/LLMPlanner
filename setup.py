@@ -13,6 +13,11 @@ setup(
     packages=find_packages(exclude=("apps", "experiments", "tests", "scripts",
                                     "third_party"),
                            include=['llm_planner', 'llm_planner.*']),
+    entry_points={
+        "console_scripts": [
+            "pz=llm_planner.compatible.palimpzest.cli.cli_main:main",
+        ],
+    },
     zip_safe=False,
     python_requires=">=3.9",
     install_requires=[],

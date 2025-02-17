@@ -60,9 +60,9 @@ def append_b(msg):
     return msg
 
 
-#sub_sub_temp = Template().map(update).reduce(integrate).map(append_ts)
+sub_sub_temp = Template().map(append_b).reduce(integrate).map(append_ts)
 
-sub_sub_temp = Template().map(append_b)
+#sub_sub_temp = Template().map(append_b)
 sub_temp = Template().map(append_a).repeat(2, sub_sub_temp)
 test = Template().input().repeat(3, sub_temp).print()
 

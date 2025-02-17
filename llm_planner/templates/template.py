@@ -25,6 +25,8 @@ class Template:
 
         self.kv_store = {}
 
+        self.results = []  # for collecting results
+
     def receiver_of(self, actor):
         return self.sender_receiver[actor.id]
 
@@ -87,9 +89,10 @@ class Template:
             def __init__(self, template):
                 super().__init__()
                 self.template = template
+                self.fn = map_function
 
             async def process(self, sender_id, message: Message):
-                msgs = map_function(message)
+                msgs = self.fn(message)
                 if isinstance(msgs, list):
                     self.template.msg_to_reduce[message.id] = len(msgs)
                     for m in msgs:
@@ -112,9 +115,10 @@ class Template:
             def __init__(self, template):
                 super().__init__()
                 self.template = template
+                self.fn = filter_function
 
             async def process(self, sender_id, message: Message):
-                if filter_function(message):
+                if self.fn(message):
                     self.send(self.template.receiver_of(self), message)
                 else:
                     mid = message["map_id"]
@@ -158,7 +162,7 @@ class Template:
         return self
 
     def repeat(self, times, sub_block):
-
+        # a message can only leave a repeat block through exit
         class private_repeat(Agent):
 
             def __init__(self, template):
@@ -177,14 +181,15 @@ class Template:
             async def process(self, sender_id, message: Message):
                 repeat_n = self.get_times(message)
                 if sender_id == self.sub_block.out_id:
-                    message.tid += 1
-                    if message.tid < repeat_n:
+                    message.tid[-1] += 1
+                    if message.tid[-1] < repeat_n:
                         self.send(self.sub_block.in_id, message)
                     else:
-                        message.tid = 0
+                        message.tid.pop()
                         self.send(self.template.receiver_of(self), message)
                 else:
                     if repeat_n > 0:
+                        message.tid.append(0)
                         self.send(self.sub_block.in_id, message)
 
         prpt = private_repeat(self)
@@ -240,12 +245,30 @@ class Template:
         self._append_op(pp)
         return self
 
-    def _append_op(self, actor_op):
+    def collect(self):
 
+        class private_collect(Agent):
+
+            def __init__(self, template):
+                super().__init__()
+                self.template = template
+
+            async def process(self, sender_id, message: Message):
+                content = message["content"]
+                self.template.results.append(content)
+
+        pc = private_collect(self)
+
+        self._append_op(pc)
+        return self
+
+    def _append_op(self, actor_op):
         self.actors.append(actor_op)
 
         self.in_id = self.actors[0].id
         self.out_id = self.actors[-1].id
+
+        self.sender_receiver.clear()
         for i in range(len(self.actors) - 1):
             self.sender_receiver[self.actors[i].id] = self.actors[i + 1].id
         return self

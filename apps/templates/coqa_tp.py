@@ -30,7 +30,7 @@ def sys_prompt(message: Message):
 
 def question(message: Message):
     sample = message["content"]
-    tid = message.tid
+    tid = message.tid[0]
 
     sid = sample["id"]
     sample_history = kv_get(f"history-{sid}")
