@@ -17,7 +17,7 @@ from llm_planner.templates.template import kv_get, kv_put
 
 from llm_planner.compatible.palimpzest.core.data.datasources import DataSource, TextFileDirectorySource
 
-from llm_planner.compatible.palimpzest.execution.operators import LLMFilterHAL, LLMConvertHAL
+from llm_planner.compatible.palimpzest.execution.operators import LLMFilterHAL, FunctionFilterHAL, LLMConvertHAL
 
 
 class SentinelExecutionEngine(ExecutionEngine):
@@ -70,11 +70,53 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
             if len(dataset_nodes) > 1:
                 dataset_nodes[1]._source = dataset_nodes[0]
 
+        # compute depends_on field for every node
+        self._compute_depends_on( dataset_nodes )
+
+        # for idx, n in enumerate( dataset_nodes ):
+        #     print(idx, n.schema.field_names())
+
+        # print("Dataset Nodes: ")
+        # for idx, n in enumerate( dataset_nodes ):
+        #    print(idx, type(n).__name__)
+
         llm_planner_t, template_input = self.dataset_nodes_to_template(dataset_nodes)
         llm_planner_t.start(template_input)
 
         return llm_planner_t.results, ExecutionStats()
 
+
+    def _compute_depends_on(self, all_nodes):
+        for idx, n in enumerate( all_nodes ):
+            if hasattr(n, '_depends_on'):
+                pass
+                # print(idx, n._depends_on)
+            else:
+                assert idx ==0, "assume idx-0 is  DataSource"
+
+    def _extract_input_fields_from_node(self, node):
+        """Returns the set of input fields needed to execute a physical operator."""
+        if node is None:
+            return None
+
+        if not hasattr(node, '_depends_on'):
+            depends_on_fields = None
+        else:
+            depends_on_fields = (
+                [field.split(".")[-1] for field in node._depends_on]
+                if node._depends_on is not None and len(node._depends_on) > 0
+                else None
+            )
+
+        input_fields = (
+            node.schema.field_names()
+            if depends_on_fields is None
+            else [field for field in node.schema.field_names() if field in depends_on_fields]
+        )
+
+        is_image_conversion = False
+
+        return input_fields
 
     def dataset_nodes_to_template(self, dataset_nodes):
         self.filter_generator = OpenAIGenerator(PromptStrategy.COT_BOOL)
@@ -83,6 +125,7 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
         llm_planner_t = Template().input()
         template_input = None
 
+        print('---')
         for idx, n in enumerate(dataset_nodes):
             opt = dataset_nodes[idx]
             ipt = None if idx < 1 else dataset_nodes[idx-1]
@@ -91,7 +134,7 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
             ipt_schema = ipt.schema if ipt is not None else None
 
             # generators.py line: 400
-            input_fields = ipt_schema.field_names() if ipt_schema is not None else None
+            input_fields = self._extract_input_fields_from_node(ipt)
             output_fields = opt_schema.field_names()
 
             if isinstance(n, DataSource):
@@ -111,7 +154,7 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
                             yield candidate # : DataRecord
 
                 template_input = TemplateInputFromDataSource(n)
-
+                print(idx, f"{type(n).__name__} -> input -> {opt_schema.__name__} ")
             # elif isinstance(n, TextFileDirectorySource):
             elif n._filter is not None:
                 ft_input_fields = input_fields
@@ -122,10 +165,13 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
 
                     llm_filter = LLMFilterHAL(filter_str, ft_input_fields, self.filter_generator)
                     llm_planner_t.filter(llm_filter)
+                    print(idx, f"{ipt_schema.__name__} -> LLMFilterHAL -> {opt_schema.__name__}")
 
                 elif n._filter.filter_fn is not None:
-                    filter_fn = n._filter.filter_fn
-                    raise Exception("Filter type not supported.", type(n._filter))
+                    llm_filter = FunctionFilterHAL(n._filter.filter_fn)
+                    llm_planner_t.filter(llm_filter)
+                    print(idx, f"{ipt_schema.__name__} -> FunctionFilterHAL -> {opt_schema.__name__}")
+
                 else:
                     raise Exception("Filter type not supported.", type(n._filter))
 
@@ -140,6 +186,18 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
             elif n._index is not None:
                 assert False
             elif opt_schema != ipt_schema:
+
+                is_image_conversion = False
+                for field_n in n.schema.field_names():
+                    if field_n.split(".")[-1] in n._depends_on:
+                        field = getattr(n.schema, field_n)
+                        if field.is_image_field:
+                            is_image_conversion = True
+                            break
+
+                if is_image_conversion:
+                    self.convert_generator = OpenAIGenerator(PromptStrategy.COT_QA_IMAGE)
+
                 cv_ipt_schema = ipt_schema
                 cv_opt_schema = opt_schema
 
@@ -149,8 +207,12 @@ class PipelinedParallelSentinelExecution(SentinelExecutionEngine, PipelinedParal
                 convert = LLMConvertHAL(cv_input_fields, cv_output_fields, cv_ipt_schema, cv_opt_schema, self.convert_generator)
 
                 llm_planner_t.map(convert)
+
+                print(idx, f"{ipt_schema.__name__} -> LLMConvertHAL -> {opt_schema.__name__}")
+
             else:
                 assert False, f"Un-recognized node : {type(n)}"
 
+        print('---')
         llm_planner_t.collect()
         return  llm_planner_t, template_input

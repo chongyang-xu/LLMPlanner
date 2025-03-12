@@ -115,7 +115,7 @@ class BaseGenerator(Generic[ContextType, InputType], ABC):
 
     def _partially_ported_check(self):
         # ported only PromptStrategy.COT_BOOL
-        assert self.prompt_strategy == PromptStrategy.COT_BOOL or self.prompt_strategy == PromptStrategy.COT_QA
+        assert self.prompt_strategy == PromptStrategy.COT_BOOL or self.prompt_strategy == PromptStrategy.COT_QA or self.prompt_strategy == PromptStrategy.COT_QA_IMAGE
         assert self.cardinality == Cardinality.ONE_TO_ONE
         assert self.model == Model.GPT_4o
 
@@ -467,7 +467,7 @@ class OpenAIGenerator(BaseGenerator[str | list[str], str]):
                     base64_image = base64.b64encode(f.read()).decode('utf-8')
                 user_content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}})
 
-            elif isinstance(field_type, ListField) and isinstance(field_type.element_type, ImageFilepathField):
+            elif isinstance(field_type, ListField) and field_type.element_type is ImageFilepathField:
                 is_image_conversion = True
                 for image_filepath in field_value:
                     with open(image_filepath, 'rb') as f:
@@ -479,7 +479,7 @@ class OpenAIGenerator(BaseGenerator[str | list[str], str]):
                 is_image_conversion = True
                 user_content.append({"type": "image_url", "image_url": {"url": field_value}})
 
-            elif isinstance(field_type, ListField) and isinstance(field_type.element_type, ImageURLField):
+            elif isinstance(field_type, ListField) and field_type.element_type is ImageURLField:
                 is_image_conversion = True
                 for image_url in field_value:
                     user_content.append({"type": "image_url", "image_url": {"url": image_url}})
@@ -490,7 +490,8 @@ class OpenAIGenerator(BaseGenerator[str | list[str], str]):
                 base64_image_str = field_value.decode("utf-8")
                 user_content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image_str}"}})
 
-            elif isinstance(field_type, ListField) and isinstance(field_type.element_type, ImageBase64Field):
+            #elif isinstance(field_type, ListField) and isinstance(field_type.element_type, ImageBase64Field):
+            elif isinstance(field_type, ListField) and field_type.element_type is ImageBase64Field:
                 is_image_conversion = True
                 for base64_image in field_value:
                     base64_image_str = base64_image.decode("utf-8")
