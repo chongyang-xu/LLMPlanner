@@ -1,11 +1,11 @@
 from llm_planner.message import Message
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 from llm_planner.actor.system import System
 
-from llm_planner.agents.OpenAI import OpenAI
+from llm_planner.operators.OpenAI import OpenAI
 
 
-class Foo(Agent):
+class Foo(Operator):
 
     async def process(self, sender_id, message):
         content = message['content']

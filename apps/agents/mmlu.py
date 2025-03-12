@@ -2,9 +2,9 @@ from datasets import load_dataset
 
 from llm_planner.message import Message
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
-from llm_planner.agents.miniLLM import MiniLLM
+from llm_planner.operators.miniLLM import MiniLLM
 
 
 def prepare_data():
@@ -37,7 +37,7 @@ def prepare_data():
     return q_list
 
 
-class MMLUAgent(Agent):
+class MMLUAgent(Operator):
 
     def __init__(self, query_list):
         super().__init__()

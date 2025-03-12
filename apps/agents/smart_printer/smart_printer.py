@@ -1,18 +1,18 @@
 from llm_planner.message import Message
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
-from llm_planner.agents.OpenAI import OpenAI
-from llm_planner.agents.Anthropic import Anthropic
+from llm_planner.operators.OpenAI import OpenAI
+from llm_planner.operators.Anthropic import Anthropic
 
-from llm_planner.agents.miniLLM import MiniLLM
-from llm_planner.agents.Llama3_8B import Llama3_8B
+from llm_planner.operators.miniLLM import MiniLLM
+from llm_planner.operators.Llama3_8B import Llama3_8B
 
-from llm_planner.agents.Python import Python
+from llm_planner.operators.Python import Python
 
 import time
 
-CODE_PROMPT = """Please help me summarize the function of following Agent Class from python package `llm_planner`
+CODE_PROMPT = """Please help me summarize the function of following Operator Class from python package `llm_planner`
 
 {FILE_CODES}
 
@@ -91,7 +91,7 @@ def read_single_file(directory, filename):
     return f"{filepath}\n```python\n{file_content}```\n\n\n"
 
 
-class SmartPrinter(Agent):
+class SmartPrinter(Operator):
 
     def __init__(self, oai):
         super().__init__()
@@ -145,7 +145,7 @@ class SmartPrinter(Agent):
             # print(f"code_prompt2:{code_prompt_2}")
 
 
-class Executer(Agent):
+class Executer(Operator):
 
     def __init__(self, sp):
         super().__init__()
@@ -178,7 +178,7 @@ class Executer(Agent):
             print(f"Something wrong, retrying...")
             self.send(self.smart_printer.id, msg)
 
-class Print(Agent):
+class Print(Operator):
 
     def __init__(self, oai, sp):
         super().__init__()

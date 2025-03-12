@@ -17,3 +17,6 @@ class Actor:
 
     def send(self, recipient_id, message):
         self.system.send(self.id, recipient_id, message)
+
+    async def finalize(self) -> None:
+        pass

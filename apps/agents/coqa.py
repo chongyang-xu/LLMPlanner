@@ -3,10 +3,10 @@ import time
 
 from llm_planner.message import Message
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
-from llm_planner.agents.miniLLM import MiniLLM
-from llm_planner.agents.Llama3_8B import Llama3_8B
+from llm_planner.operators.miniLLM import MiniLLM
+from llm_planner.operators.Llama3_8B import Llama3_8B
 
 
 #############
@@ -22,7 +22,7 @@ def prepare_data():
     return data
 
 
-class CoQAAgent(Agent):
+class CoQAAgent(Operator):
 
     def __init__(self, data_surce):
         super().__init__()

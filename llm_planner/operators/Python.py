@@ -1,4 +1,4 @@
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 from llm_planner.message import Message
 
 import subprocess
@@ -6,7 +6,7 @@ import sys
 import os
 
 
-class Python(Agent):
+class Python(Operator):
 
     async def process(self, sender_id, message: Message):
         content = message["content"]

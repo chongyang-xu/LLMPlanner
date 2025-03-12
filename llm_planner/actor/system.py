@@ -68,14 +68,25 @@ class System:
             else:
                 await asyncio.sleep(0)
 
+    async def stop(self):
+        for name, act in self.actors.items():
+            await act.finalize()
+
     @classmethod
     async def finish(cls):
         try:
             system = cls.__instance
             await system.run()
+            await system.stop()
         except KeyboardInterrupt:
             print("Stopping the loop.")
 
     @classmethod
     def start(cls):
         asyncio.run(cls.finish())
+
+    def run_agent(self, agent, msg):
+        try:
+            asyncio.run(agent.process(msg))
+        except:
+            pass

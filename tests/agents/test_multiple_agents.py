@@ -1,12 +1,12 @@
 import asyncio
 
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
 from llm_planner.message import Message
 
 
-class ParentAgent(Agent):
+class ParentAgent(Operator):
 
     async def process(self, sender_id, message):
         content = message['content']
@@ -28,7 +28,7 @@ class ParentAgent(Agent):
             print(f"ParentAgent: Received unknown message '{content}'")
 
 
-class ChildAgent(Agent):
+class ChildAgent(Operator):
 
     async def process(self, sender_id, message):
         content = message['content']
@@ -39,7 +39,7 @@ class ChildAgent(Agent):
         self.send(sender_id, {'content': response})
 
 
-class SecondAgent(Agent):
+class SecondAgent(Operator):
 
     async def process(self, sender_id, message):
         content = message['content']

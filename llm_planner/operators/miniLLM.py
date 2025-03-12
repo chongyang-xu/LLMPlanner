@@ -1,13 +1,13 @@
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
 from llm_planner.message import Message
 
 from llm_planner.service.hf_serve import HFServe
 
-LLAMA3_8B_PATH = "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B-Instruct/"
+MINI_LLM_PATH = "/DS/dsg-ml/nobackup/cxu/weights/Qwen2-0.5B/"
 
 
-class Llama3_8B(Agent):
+class MiniLLM(Operator):
 
     def __init__(self,
                  max_token=16,
@@ -17,16 +17,18 @@ class Llama3_8B(Agent):
         super().__init__(return_value=return_value,
                          with_batching=with_batching,
                          with_caching=with_caching)
-        policy_param_ = {"model": LLAMA3_8B_PATH, "max_token": max_token}
+        policy_param_ = {"model": MINI_LLM_PATH, "max_token": max_token}
         self.serve = HFServe(None, policy_param_)
 
     async def process(self, sender_id, message: Message):
         if message["content"] is not None:
+
             r = self.serve.work_on([message["content"]])
             if r is not None:
                 msg = message.spawn()
                 msg['request_message'] = message
                 msg['response'] = r[0]
+
                 self.send(sender_id, msg)
 
     async def process_batch(self, sender_ids, messages):
@@ -60,7 +62,7 @@ class Llama3_8B(Agent):
     def blocking_serve(self, message: Message):
         start = time.time()
 
-        msg = message.spawn()
+        msg = message.spawn()()
         if isinstance(message["prompt"], list):
             msg["ret"] = self.serve.work_on(message["prompt"])
         else:

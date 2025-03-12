@@ -1,4 +1,4 @@
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
 from llm_planner.message import Message
 
@@ -9,7 +9,7 @@ import asyncio
 S2_API_KEY = os.environ["S2_API_KEY"] if "S2_API_KEY" in os.environ else None
 
 
-class SemanticScholar(Agent):
+class SemanticScholar(Operator):
 
     def __init__(self):
         super().__init__()

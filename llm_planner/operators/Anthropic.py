@@ -1,10 +1,10 @@
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
 from llm_planner.message import Message
 from llm_planner.service.anthropic_serve_api import AnthropicServe_API
 
 
-class Anthropic(Agent):
+class Anthropic(Operator):
 
     def __init__(self,
                  max_token=16,
