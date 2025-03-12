@@ -38,7 +38,7 @@ After llm_planner is installed, an 'app' that uses llm_planner can be started.
 
 This is an example sketch of an app:
 ```python
-class Printer(Agent):
+class Printer(Operator):
 
     async def process(self, sender_id, message):
         content = message['content']

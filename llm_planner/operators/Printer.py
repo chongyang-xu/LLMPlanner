@@ -1,4 +1,4 @@
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 from llm_planner.message import Message
 
 from reportlab.lib.pagesizes import letter
@@ -10,7 +10,7 @@ from cairosvg import svg2png
 import os
 
 
-class Printer(Agent):
+class Printer(Operator):
 
     def __init__(self, output_dir="pdf_files"):
         super().__init__()

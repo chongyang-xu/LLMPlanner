@@ -1,9 +1,9 @@
 import asyncio
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 from llm_planner.message import Message
 
 
-class Human(Agent):
+class Human(Operator):
 
     def __init__(self):
         super().__init__()

@@ -110,7 +110,7 @@ def get_time_dic(response_contents, step_num):
         return [], []
 
 
-class Step1(Agent):
+class Step1(Operator):
 
     async def process(self, sender_id, message: Message):
 

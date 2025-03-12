@@ -1,14 +1,14 @@
 from llm_planner.message import Message
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
-from llm_planner.agents.miniLLM import MiniLLM
-from llm_planner.agents.Llama3_8B import Llama3_8B
+from llm_planner.operators.miniLLM import MiniLLM
+from llm_planner.operators.Llama3_8B import Llama3_8B
 
 import os, re
 
 
-class SotAgent(Agent):
+class SotAgent(Operator):
 
     def __init__(self):
         super().__init__()

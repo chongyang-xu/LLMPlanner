@@ -1,8 +1,8 @@
 from ..message import Message
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 from llm_planner.actor.system import System
 
-from llm_planner.agents.miniLLM import MiniLLM
+from llm_planner.operators.miniLLM import MiniLLM
 
 import inspect
 
@@ -32,7 +32,7 @@ class Template:
 
     def input(self):
 
-        class private_input(Agent):
+        class private_input(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -54,7 +54,7 @@ class Template:
     def ask(self, llm_name):
         assert llm_name in self.registered_agent
 
-        class private_ask(Agent):
+        class private_ask(Operator):
 
             def __init__(self, template, llm_name):
                 super().__init__()
@@ -84,7 +84,7 @@ class Template:
 
     def map(self, map_function):
 
-        class private_map(Agent):
+        class private_map(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -110,7 +110,7 @@ class Template:
 
     def filter(self, filter_function):
 
-        class private_filter(Agent):
+        class private_filter(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -132,7 +132,7 @@ class Template:
 
     def reduce(self, reduce_function):
 
-        class private_reduce(Agent):
+        class private_reduce(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -163,7 +163,7 @@ class Template:
 
     def repeat(self, times, sub_block):
         # a message can only leave a repeat block through exit
-        class private_repeat(Agent):
+        class private_repeat(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -200,7 +200,7 @@ class Template:
 
     def branch(self, condition, true_block, false_block):
 
-        class private_branch(Agent):
+        class private_branch(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -230,7 +230,7 @@ class Template:
 
     def print(self):
 
-        class private_print(Agent):
+        class private_print(Operator):
 
             def __init__(self, template):
                 super().__init__()
@@ -247,7 +247,7 @@ class Template:
 
     def collect(self):
 
-        class private_collect(Agent):
+        class private_collect(Operator):
 
             def __init__(self, template):
                 super().__init__()

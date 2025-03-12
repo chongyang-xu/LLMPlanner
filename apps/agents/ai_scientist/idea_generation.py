@@ -4,11 +4,11 @@ from os import path as osp
 
 from llm_planner.message import Message
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
-from llm_planner.agents.miniLLM import MiniLLM
-from llm_planner.agents.Llama3_8B import Llama3_8B
-from llm_planner.agents.SemanticScholar import SemanticScholar
+from llm_planner.operators.miniLLM import MiniLLM
+from llm_planner.operators.Llama3_8B import Llama3_8B
+from llm_planner.operators.SemanticScholar import SemanticScholar
 
 
 def extract_json(txt):
@@ -35,7 +35,7 @@ def extract_json(txt):
         return None  # Invalid JSON format
 
 
-class NoveltyChecker(Agent):
+class NoveltyChecker(Operator):
 
     def __init__(self, llm_agent, semantic_search):
         super().__init__()
@@ -286,7 +286,7 @@ This JSON will be automatically parsed, so ensure the format is precise.'''
                     json.dump(novel_ideas, f, indent=4)
 
 
-class IdeaGenerator(Agent):
+class IdeaGenerator(Operator):
 
     def __init__(self, llm_agent):
         super().__init__()

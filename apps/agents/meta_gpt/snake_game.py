@@ -1,18 +1,18 @@
 from llm_planner.message import Message
 from llm_planner.actor.system import System
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 
-from llm_planner.agents.miniLLM import MiniLLM
-from llm_planner.agents.Llama3_8B import Llama3_8B
+from llm_planner.operators.miniLLM import MiniLLM
+from llm_planner.operators.Llama3_8B import Llama3_8B
 
 import os
 
 import inspect
 
 
-class SoftwareReviser(Agent):
+class SoftwareReviser(Operator):
 
-    def __init__(self, llm_agent: Agent):
+    def __init__(self, llm_agent: Operator):
         super().__init__()
         self.counter = 0
         self.llm_agent = llm_agent
@@ -79,9 +79,9 @@ Response format:
             self.send(self.llm_agent.id, msg)
 
 
-class SoftwareReviewer(Agent):
+class SoftwareReviewer(Operator):
 
-    def __init__(self, llm_agent: Agent):
+    def __init__(self, llm_agent: Operator):
         super().__init__()
         self.llm_agent = llm_agent
         self.codes = {}
@@ -150,9 +150,9 @@ Comments:
             self.send(self.llm_agent.id, msg)
 
 
-class SoftwareCoder(Agent):
+class SoftwareCoder(Operator):
 
-    def __init__(self, llm_agent_: Agent, reviewer_: Agent):
+    def __init__(self, llm_agent_: Operator, reviewer_: Operator):
         super().__init__()
         self.llm_agent = llm_agent_
         self.reviewer = reviewer_
@@ -198,9 +198,9 @@ Response format:
             self.send(self.llm_agent.id, msg)
 
 
-class SoftwareArchitect(Agent):
+class SoftwareArchitect(Operator):
 
-    def __init__(self, llm_agent: Agent):
+    def __init__(self, llm_agent: Operator):
         super().__init__()
         self.llm_agent = llm_agent
         self.PROMPT_TEMPLATE = """

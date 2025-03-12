@@ -7,13 +7,13 @@ from probe_data import REGISTRY
 from refusal import refusal_heuristic
 
 from llm_planner.message import Message
-from llm_planner.actor.agent import Agent
+from llm_planner.actor.operator import Operator
 from llm_planner.actor.system import System
 
-from llm_planner.agents.miniLLM import MiniLLM
+from llm_planner.operators.miniLLM import MiniLLM
 
 
-class AgenticSecurity(Agent):
+class AgenticSecurity(Operator):
 
     def __init__(self, llm_agent):
         super().__init__()

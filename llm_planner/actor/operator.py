@@ -15,7 +15,7 @@ class Dependency(Enum):
     LAZY = 2
 
 
-class Agent(Actor):
+class Operator(Actor):
 
     def __init__(self,
                  return_value=False,
@@ -37,7 +37,7 @@ class Agent(Actor):
             self.batch_size = 2
 
     def add_dependency(self,
-                       agent: 'Agent',
+                       agent: 'Operator',
                        dependency_type: Dependency = Dependency.STRICT):
         pass
 
