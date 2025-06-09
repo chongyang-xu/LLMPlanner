@@ -34,7 +34,17 @@ To intall third party modules, refer [here](./docs/third_party.md).
 
 
 ### Run an example
-After llm_planner is installed, an 'app' that uses llm_planner can be started.
+#### setups:
+Before running an app, following setups are needed:
+
+- To use operators/Llama3_8B, you can pass local weights path in command line
+```bash
+export LP_LLAMA3_8B_PATH=xxx # replace xxx with your local path
+```
+
+#### run an app:
+Install llm_planner first, then an 'app' that uses llm_planner can be started.
+
 
 This is an example sketch of an app:
 ```python
