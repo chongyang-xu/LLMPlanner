@@ -1,10 +1,12 @@
+import os
+
 from llm_planner.actor.operator import Operator
 
 from llm_planner.message import Message
 
 from llm_planner.service.hf_serve import HFServe
 
-LLAMA3_8B_PATH = "/DS/dsg-ml/nobackup/cxu/weights/Meta-Llama-3-8B-Instruct/"
+LLAMA3_8B_PATH = os.getenv("LP_LLAMA3_8B_PATH", None)
 
 
 class Llama3_8B(Operator):
@@ -18,6 +20,8 @@ class Llama3_8B(Operator):
                          with_batching=with_batching,
                          with_caching=with_caching)
         policy_param_ = {"model": LLAMA3_8B_PATH, "max_token": max_token}
+        assert LLAMA3_8B_PATH is not None, "LLAMA3_8B_PATH should not be empty"
+
         self.serve = HFServe(None, policy_param_)
 
     async def process(self, sender_id, message: Message):
