@@ -1,3 +1,6 @@
+# Copyright (c) 2024-2026 MPI-SWS, Germany
+# Author: Chongyang Xu <cxu@mpi-sws.org>
+
 from llm_planner.actor.operator import Operator
 
 from llm_planner.message import Message

@@ -1,3 +1,6 @@
+# Copyright (c) 2024-2026 MPI-SWS, Germany
+# Author: Chongyang Xu <cxu@mpi-sws.org>
+
 from abc import ABC, abstractmethod
 from typing import List
 

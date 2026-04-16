@@ -1,3 +1,6 @@
+# Copyright (c) 2024-2026 MPI-SWS, Germany
+# Author: Chongyang Xu <cxu@mpi-sws.org>
+
 from datasets import load_dataset
 
 from llm_planner.templates.template import Template
